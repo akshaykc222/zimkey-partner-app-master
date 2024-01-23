@@ -632,6 +632,8 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                     //go next page---------
                                     setState(() {
                                       _currWidgetIndex++;
+                                      FocusScope.of(context)
+                                          .requestFocus(_accNoNode);
                                       _pagecontroller.nextPage(
                                         duration: Duration(milliseconds: 400),
                                         curve: Curves.easeIn,
@@ -799,7 +801,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                 color: (_currWidgetIndex == 0 &&
                                             filledName &&
                                             (filledEmail && validEmail) &&
-                                            (filledAadhar && !errorAadhar)) ||
+                                            (filledAadhar && validAadhar)) ||
                                         (_currWidgetIndex == 1 &&
                                             filledHouseNo &&
                                             filledLocality &&
@@ -833,7 +835,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                   color: (_currWidgetIndex == 0 &&
                                               filledName &&
                                               (filledEmail && validEmail) &&
-                                              (filledAadhar && !errorAadhar)) ||
+                                              (filledAadhar && validAadhar)) ||
                                           (_currWidgetIndex == 1 &&
                                               filledHouseNo &&
                                               filledLocality &&
@@ -1087,32 +1089,34 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                   inputFormatters: [aadharMaskFormatter],
                   textInputAction: TextInputAction.done,
                   keyboardType: TextInputType.number,
-                  onTap: () {
-                    if (_email.text.isNotEmpty) {
-                      setState(() {
-                        errorEmail = !isEmail(_email.text);
-                        validEmail = !errorEmail;
-                      });
-                    } else {
-                      setState(() {
-                        validEmail = true;
-                        filledEmail = false;
-                        errorEmail = false;
-                      });
-                    }
-                  },
-                  // onChanged: (val) {
-                  //   if (_aadharNo.text.isNotEmpty)
+                  // onTap: () {
+                  //   if (_email.text.isNotEmpty) {
                   //     setState(() {
-                  //       filledAadhar = true;
+                  //       errorEmail = !isEmail(_email.text);
+                  //       validEmail = !errorEmail;
                   //     });
-                  //   else
+                  //   } else {
                   //     setState(() {
-                  //       filledAadhar = false;
-                  //       validAadhar = true;
+                  //       validEmail = true;
+                  //       filledEmail = false;
+                  //       errorEmail = false;
                   //     });
-                  //   print('filledAadhar ... $filledAadhar');
+                  //   }
                   // },
+                  onChanged: (val) {
+                    if (_aadharNo.text.isEmpty)
+                      setState(() {
+                        filledAadhar = false;
+                        errorAadhar = true;
+                      });
+                    else
+                      setState(() {
+                        filledAadhar = true;
+                        validAadhar = true;
+                        errorAadhar = false;
+                      });
+                    print('filledAadhar ... $filledAadhar');
+                  },
                   style: TextStyle(
                     fontSize: 14,
                   ),

@@ -969,55 +969,55 @@ class _ProfileState extends State<Profile> {
             ),
           ),
           actions: [
-            Container(
-              margin: EdgeInsets.only(bottom: 10, left: 20, right: 20),
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-              decoration: BoxDecoration(
-                color: zimkeyOrange,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: zimkeyLightGrey.withOpacity(0.1),
-                    blurRadius: 5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      2.0, // Move to right 10  horizontally
-                      3.0, // Move to bottom 10 Vertically
+            loading
+                ? CircularProgressIndicator()
+                : Container(
+                    margin: EdgeInsets.only(bottom: 10, left: 20, right: 20),
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: zimkeyOrange,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: zimkeyLightGrey.withOpacity(0.1),
+                          blurRadius: 5.0, // soften the shadow
+                          spreadRadius: 1.0, //extend the shadow
+                          offset: Offset(
+                            2.0, // Move to right 10  horizontally
+                            3.0, // Move to bottom 10 Vertically
+                          ),
+                        )
+                      ],
                     ),
-                  )
-                ],
-              ),
-              child: InkWell(
-                onTap: () async {
-                  setState(() {
-                    loading = true;
-                  });
-                  //unregister devide ID
-                  if (fbState.deviceId != null &&
-                      fbState.deviceId.value != null) {
-                    await unsetFCMToken(context, fbState.deviceId.value);
-                  }
-                  fbState.setUserLoggedIn('false');
-                  fbState.setToken('');
-                  await auth.signOut().then((value) {
-                    setState(() {
-                      loading = false;
-                    });
-                  });
-                  print('Logged out!!!!!!');
-                  Get.toNamed('/login');
-                },
-                child: Text(
-                  'Signout',
-                  style: TextStyle(
-                    color: zimkeyWhite,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    child: InkWell(
+                      onTap: () async {
+                        print("tapping");
+                        setState(() {
+                          loading = true;
+                        });
+                        //unregister devide ID
+                        await unsetFCMToken(context, fbState.deviceId.value);
+                        fbState.setUserLoggedIn('false');
+                        fbState.setToken('');
+                        await auth.signOut().then((value) {
+                          setState(() {
+                            loading = false;
+                          });
+                        });
+                        print('Logged out!!!!!!');
+                        Get.toNamed('/login');
+                      },
+                      child: Text(
+                        'Signout',
+                        style: TextStyle(
+                          color: zimkeyWhite,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
           ],
         );
       },
