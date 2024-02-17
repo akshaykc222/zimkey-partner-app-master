@@ -22,10 +22,12 @@ import 'jobCalendarDetail.dart';
 
 class JobsCalendar extends StatefulWidget {
   final Function(int index)? updateTab;
+  final int? pos;
 
   const JobsCalendar({
     Key? key,
     this.updateTab,
+    this.pos,
   }) : super(key: key);
   @override
   _BookingsState createState() => _BookingsState();
@@ -100,6 +102,9 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
   List _keys = [];
   // regist if the the button was tapped
   bool _buttonTap = false;
+  updateTab(int pos) {
+    _controller?.animateTo(pos);
+  }
 
   filterOpenJobs() {
     //     enum BookingServiceItemStatusTypeEnum {
@@ -227,6 +232,10 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
           //     ),
           ),
     );
+    print("Tab Posistion :${widget.pos}");
+    if (widget.pos != null) {
+      updateTab(widget.pos!);
+    }
     super.initState();
   }
 
@@ -341,11 +350,11 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
                       // our Tab Views
                       BookingWidget(
                         status: PartnerBookingsStatusTypeEnum.OPEN,
-                        updateTab: widget.updateTab,
+                        updateTab: updateTab,
                       ),
                       BookingWidget(
                         status: PartnerBookingsStatusTypeEnum.IN_PROGRESS,
-                        updateTab: widget.updateTab,
+                        updateTab: updateTab,
                       ),
                       BookingWidget(
                         status: PartnerBookingsStatusTypeEnum.COMPLETED,

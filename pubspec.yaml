@@ -139,6 +139,7 @@ flutter:
         - assets/images/icons/img_icon.svg
         - assets/images/icons/newIcons/company.svg
         - assets/images/graphics/zimkeyLogo.svg
+        - assets/icon/
 
     # An image asset can refer to one or more resolution-specific "variants", see
     # https://flutter.dev/assets-and-images/#resolution-aware.

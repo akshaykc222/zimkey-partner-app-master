@@ -14,6 +14,7 @@ import '../shared/globalMutations.dart';
 import '../shared/globals.dart';
 import '../shared/gqlQueries.dart';
 import '../theme.dart';
+import 'customer_support.dart';
 import 'editBankAccnt.dart';
 import 'editProfile.dart';
 import 'updateAreas.dart';
@@ -555,12 +556,12 @@ class _ProfileState extends State<Profile> {
                                                 context,
                                                 EditAvailability(),
                                               ),
-                                              profileMenuitem(
-                                                'Payment Information',
-                                                'assets/images/icons/rupee.svg',
-                                                context,
-                                                null,
-                                              ),
+                                              // profileMenuitem(
+                                              //   'Payment Information',
+                                              //   'assets/images/icons/rupee.svg',
+                                              //   context,
+                                              //   null,
+                                              // ),
                                               profileMenuitem(
                                                 'Wallet Balance & History',
                                                 'assets/images/icons/newIcons/empty-wallet.svg',
@@ -571,7 +572,7 @@ class _ProfileState extends State<Profile> {
                                                 'Customer Support',
                                                 'assets/images/icons/newIcons/support.svg',
                                                 context,
-                                                null,
+                                                CustomerSupport(),
                                               ),
                                             ],
                                           )
@@ -722,6 +723,8 @@ class _ProfileState extends State<Profile> {
                                         fbState.isLoggedIn.isEmpty)
                                       GestureDetector(
                                         onTap: () async {
+                                          print("tapping");
+
                                           showLogoutDialog(
                                               'Confirm',
                                               "Are you sure you want to sign out from the app?",

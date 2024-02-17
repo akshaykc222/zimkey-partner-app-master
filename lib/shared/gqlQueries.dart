@@ -829,6 +829,19 @@ mutation partnerRedeemWallet(\$amount: Float!){
  '''
     .replaceAll('\n', '');
 
+String addCustomerSupport = '''
+mutation AddCustomerSupport(\$subject:String!,\$message:String!) {
+    addCustomerSupport(data: {subject: \$subject, message: \$message}) {
+        id
+        userId
+        subject
+        message
+        createDateTime
+    }
+}
+ '''
+    .replaceAll('\n', '');
+
 //Get Call from Partner
 String callPartnerCustomer = '''
 mutation callPartnerCustomer(\$bookingServiceItemId: String!){

@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../fbState.dart';
 import '../models/jobModel.dart';
@@ -206,150 +207,161 @@ class _HomePageState extends State<Home> {
     print("Home Page Count ${homeWidgetList.length}");
   }
 
+  Function? refetchList;
+
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+  void _onRefresh() async {
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    await refetchList!();
+    setState(() {});
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: true,
       child: Stack(
         children: [
-          Scaffold(
-            resizeToAvoidBottomInset: false,
-            key: _key,
-            backgroundColor: zimkeyWhite,
-            body: Container(
-              child: Stack(
-                children: [
-                  Query(
-                      options: QueryOptions(
-                        document: gql(getMe),
-                        fetchPolicy: FetchPolicy.noCache,
-                      ),
-                      builder: (
-                        QueryResult result, {
-                        VoidCallback? refetch,
-                        FetchMore? fetchMore,
-                      }) {
-                        if (result.isLoading)
-                          return Center(child: sharedLoadingIndicator());
-                        else if (result.data != null &&
-                            result.data!['me'] != null) {
-                          PartnerUser tempUser;
-                          tempUser = PartnerUser.fromJson(result.data!['me']);
-                          userDetails = tempUser;
-                          fbState.setPartnerUser(userDetails);
-                          if (userDetails!.partnerDetails != null) {
-                            //Set Service areas
-                            if (userDetails!.partnerDetails!.serviceAreas !=
-                                    null &&
-                                userDetails!
-                                    .partnerDetails!.serviceAreas!.isNotEmpty) {
-                              partnerServiceAreas.clear();
-                              for (Area itemArea in userDetails!
-                                  .partnerDetails!.serviceAreas!) {
-                                partnerServiceAreas.add(itemArea.id);
-                              }
-                            }
-                            //Set Partner Services
-                            if (userDetails!.partnerDetails!.services != null &&
-                                userDetails!
-                                    .partnerDetails!.services!.isNotEmpty) {
-                              partnerServices.clear();
-                              for (AllServices serv
-                                  in userDetails!.partnerDetails!.services!) {
-                                partnerServices.add(serv.id);
-                              }
+          Container(
+            child: Stack(
+              children: [
+                Query(
+                    options: QueryOptions(
+                      document: gql(getMe),
+                      fetchPolicy: FetchPolicy.noCache,
+                    ),
+                    builder: (
+                      QueryResult result, {
+                      VoidCallback? refetch,
+                      FetchMore? fetchMore,
+                    }) {
+                      refetchList = refetch;
+                      if (result.isLoading)
+                        return Center(child: sharedLoadingIndicator());
+                      else if (result.data != null &&
+                          result.data!['me'] != null) {
+                        PartnerUser tempUser;
+                        tempUser = PartnerUser.fromJson(result.data!['me']);
+                        userDetails = tempUser;
+                        fbState.setPartnerUser(userDetails);
+                        if (userDetails!.partnerDetails != null) {
+                          //Set Service areas
+                          if (userDetails!.partnerDetails!.serviceAreas !=
+                                  null &&
+                              userDetails!
+                                  .partnerDetails!.serviceAreas!.isNotEmpty) {
+                            partnerServiceAreas.clear();
+                            for (Area itemArea
+                                in userDetails!.partnerDetails!.serviceAreas!) {
+                              partnerServiceAreas.add(itemArea.id);
                             }
                           }
-                          //set to check partner status
-                          partnerUserType = userDetails!.userType;
-                          getCMSContentMutation();
-                        } else if (result.hasException) {
-                          print(result.exception);
+                          //Set Partner Services
+                          if (userDetails!.partnerDetails!.services != null &&
+                              userDetails!
+                                  .partnerDetails!.services!.isNotEmpty) {
+                            partnerServices.clear();
+                            for (AllServices serv
+                                in userDetails!.partnerDetails!.services!) {
+                              partnerServices.add(serv.id);
+                            }
+                          }
                         }
-                        return Query(
-                            options: QueryOptions(
-                              document: gql(getDashBoard),
-                              fetchPolicy: FetchPolicy.noCache,
-                            ),
-                            builder: (
-                              QueryResult result2, {
-                              VoidCallback? refetch,
-                              FetchMore? fetchMore,
-                            }) {
-                              print("Dashboard ${result2}");
-                              if (result2.isLoading)
-                                return Center(child: sharedLoadingIndicator());
-                              else if (result2.data != null &&
-                                  result2.data!['getPartnerDashboard'] !=
-                                      null) {
-                                print(
-                                    "data item${result2.data!['getPartnerDashboard']['completed_jobs']}");
+                        //set to check partner status
+                        partnerUserType = userDetails!.userType;
+                        getCMSContentMutation();
+                      } else if (result.hasException) {
+                        print(result.exception);
+                      }
+                      return Query(
+                          options: QueryOptions(
+                            document: gql(getDashBoard),
+                            fetchPolicy: FetchPolicy.noCache,
+                          ),
+                          builder: (
+                            QueryResult result2, {
+                            VoidCallback? refetch,
+                            FetchMore? fetchMore,
+                          }) {
+                            print("Dashboard ${result2}");
+                            if (result2.isLoading)
+                              return Center(child: sharedLoadingIndicator());
+                            else if (result2.data != null &&
+                                result2.data!['getPartnerDashboard'] != null) {
+                              print(
+                                  "data item${result2.data!['getPartnerDashboard']['completed_jobs']}");
 
-                                // filterOpenJobs();
-                                completedJobs = result2
-                                    .data!['getPartnerDashboard']
-                                        ['completed_jobs']
-                                    .toInt();
-                                print("Completed Jobs $completedJobs");
-                                homeWidgetList
-                                    .firstWhere((element) =>
-                                        element.status == "Completed")
-                                    .value = completedJobs;
-                                inProgressJobs =
-                                    result2.data!['getPartnerDashboard']
-                                        ['in_progress'];
-                                homeWidgetList
-                                    .firstWhere((element) =>
-                                        element.status == "In Progress Jobs")
-                                    .value = inProgressJobs;
-                                cancelledJobs =
-                                    result2.data!['getPartnerDashboard']
-                                        ['cancelled_jobs'];
-                                homeWidgetList
-                                    .firstWhere((element) =>
-                                        element.status == "Cancelled Jobs")
-                                    .value = cancelledJobs;
-                                pendingJobs =
-                                    result2.data!['getPartnerDashboard']
-                                        ['pending_jobs'];
-                                homeWidgetList
-                                    .firstWhere((element) =>
-                                        element.status == "Pending Jobs")
-                                    .value = pendingJobs;
-                                assignedJobs =
-                                    result2.data!['getPartnerDashboard']
-                                        ['assigned_jobs'];
-                                homeWidgetList
-                                    .firstWhere((element) =>
-                                        element.status == "Assigned Jobs")
-                                    .value = assignedJobs;
-                                homeWidgetList
-                                        .firstWhere((element) =>
-                                            element.status == "Wallet Balance")
-                                        .value =
-                                    result2.data!['getPartnerDashboard']
-                                        ['wallet_balance'];
-                                // homeWidgetList.clear();
-                                // setState(() {});
-                                fbState.setJobCalendarList(jobsCalendar);
-                              } else if (result2.hasException) {
-                                print('partner calendar EXCEPTION $result2!!');
-                              }
-                              return Container(
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      constraints: BoxConstraints(
-                                        maxHeight:
-                                            MediaQuery.of(context).size.height *
-                                                1.5,
-                                        minHeight:
-                                            MediaQuery.of(context).size.height -
-                                                300,
-                                      ),
-                                      height:
-                                          MediaQuery.of(context).size.height /
-                                              1.24,
+                              // filterOpenJobs();
+                              completedJobs = result2
+                                  .data!['getPartnerDashboard']
+                                      ['completed_jobs']
+                                  .toInt();
+                              print("Completed Jobs $completedJobs");
+                              homeWidgetList
+                                  .firstWhere((element) =>
+                                      element.status == "Completed")
+                                  .value = completedJobs;
+                              inProgressJobs = result2
+                                  .data!['getPartnerDashboard']['in_progress'];
+                              homeWidgetList
+                                  .firstWhere((element) =>
+                                      element.status == "In Progress Jobs")
+                                  .value = inProgressJobs;
+                              cancelledJobs =
+                                  result2.data!['getPartnerDashboard']
+                                      ['cancelled_jobs'];
+                              homeWidgetList
+                                  .firstWhere((element) =>
+                                      element.status == "Cancelled Jobs")
+                                  .value = cancelledJobs;
+                              pendingJobs = result2.data!['getPartnerDashboard']
+                                  ['pending_jobs'];
+                              homeWidgetList
+                                  .firstWhere((element) =>
+                                      element.status == "Pending Jobs")
+                                  .value = pendingJobs;
+                              assignedJobs =
+                                  result2.data!['getPartnerDashboard']
+                                      ['assigned_jobs'];
+                              homeWidgetList
+                                  .firstWhere((element) =>
+                                      element.status == "Assigned Jobs")
+                                  .value = assignedJobs;
+                              homeWidgetList
+                                      .firstWhere((element) =>
+                                          element.status == "Wallet Balance")
+                                      .value =
+                                  result2.data!['getPartnerDashboard']
+                                      ['wallet_balance'];
+                              // homeWidgetList.clear();
+                              // setState(() {});
+                              fbState.setJobCalendarList(jobsCalendar);
+                            } else if (result2.hasException) {
+                              print('partner calendar EXCEPTION $result2!!');
+                            }
+                            return Container(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    constraints: BoxConstraints(
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height *
+                                              1.5,
+                                      minHeight:
+                                          MediaQuery.of(context).size.height -
+                                              300,
+                                    ),
+                                    height: MediaQuery.of(context).size.height /
+                                        1.24,
+                                    child: SmartRefresher(
+                                      controller: _refreshController,
+                                      enablePullDown: true,
+                                      header: WaterDropHeader(),
+                                      onRefresh: _onRefresh,
                                       child: ListView(
                                         shrinkWrap: true,
                                         children: [
@@ -508,13 +520,13 @@ class _HomePageState extends State<Home> {
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            });
-                      }),
-                ],
-              ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          });
+                    }),
+              ],
             ),
           ),
           if (isloading) Center(child: sharedLoadingIndicator()),

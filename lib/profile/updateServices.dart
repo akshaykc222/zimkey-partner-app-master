@@ -393,6 +393,9 @@ class _UpdateServicesState extends State<UpdateServices> {
                     }
                     print("working upto here");
                     if (selectedServiceIds.isNotEmpty) {
+                      setState(() {
+                        isloading = false;
+                      });
                       print("working upto here");
                       confirmUpdateService('Confirm',
                           "Are you sure you want to update your services?");
@@ -516,7 +519,12 @@ class _UpdateServicesState extends State<UpdateServices> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: InkWell(
-                          onTap: () => Get.back(),
+                          onTap: () {
+                            Get.back();
+                            setState(() {
+                              isloading = false;
+                            });
+                          },
                           child: Text(
                             'Cancel',
                             style: TextStyle(

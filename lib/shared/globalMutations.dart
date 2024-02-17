@@ -595,7 +595,8 @@ Future<QueryResult> registerPartnerMutation(
     String ifsc,
     String photoId,
     bool partofCompany,
-    String? companyId) async {
+    String? companyId,
+    String? adhar) async {
   final MutationOptions _options = MutationOptions(
     document: gql(registerPartner),
     variables: <String, dynamic>{
@@ -616,6 +617,7 @@ Future<QueryResult> registerPartnerMutation(
         "ifscCode": ifsc,
         "companyId": companyId,
         "photoId": photoId,
+        "aadharNumber": adhar
       },
     },
   );
@@ -624,8 +626,7 @@ Future<QueryResult> registerPartnerMutation(
   if (registerResult.hasException) {
     print(registerResult.exception.toString());
   }
-  if (registerResult != null &&
-      registerResult.data != null &&
+  if (registerResult.data != null &&
       registerResult.data!['registerPartner'] != null) {
     PartnerUser thisUser;
     thisUser = PartnerUser.fromJson(registerResult.data!['registerPartner']);

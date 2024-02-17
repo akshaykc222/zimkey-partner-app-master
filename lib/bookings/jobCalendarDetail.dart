@@ -2709,6 +2709,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                             context,
                             Dashboard(
                               index: 2,
+                              tabIndex: 2,
                             ));
                       } else if (jobdurationDays > 0 && jobdurationHrs == 0) {
                         showCustomDialog(
@@ -2983,6 +2984,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                               context,
                               Dashboard(
                                 index: 2,
+                                tabIndex: 1,
                               ),
                             );
                           }

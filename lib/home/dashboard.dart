@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+
 import '../bookings/jobsCalendar.dart';
 import '../fbState.dart';
 import '../jobBoard/jobBoard.dart';
@@ -17,9 +18,12 @@ import 'homePage.dart';
 
 class Dashboard extends StatefulWidget {
   final int? index;
+  final int? tabIndex;
+
   const Dashboard({
     Key? key,
     this.index,
+    this.tabIndex,
   }) : super(key: key);
 
   @override
@@ -122,6 +126,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     JobsCalendar(
                       updateTab: onTabTapped,
+                      pos: widget.tabIndex,
                     ),
                     Profile(),
                   ],

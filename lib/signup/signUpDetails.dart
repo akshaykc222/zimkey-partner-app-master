@@ -570,10 +570,12 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                       thiAddhar.length < 12)
                                     setState(() {
                                       validAadhar = false;
+                                      errorAadhar = false;
                                     });
                                   else
                                     setState(() {
                                       validAadhar = true;
+                                      errorAadhar = true;
                                     });
                                 }
                                 //frst page check
@@ -581,7 +583,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                   if (filledName &&
                                       (filledEmail && validEmail) &&
                                       filledAadhar &&
-                                      !errorAadhar)
+                                      validAadhar)
                                     //go next page---------
                                     setState(() {
                                       _currWidgetIndex++;
@@ -628,7 +630,8 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                   if (filledHouseNo &&
                                       filledLocality &&
                                       filledArea &&
-                                      filledPostal)
+                                      filledPostal &&
+                                      !errorPostal)
                                     //go next page---------
                                     setState(() {
                                       _currWidgetIndex++;
@@ -671,14 +674,6 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                     else
                                       setState(() {
                                         errorCity = false;
-                                      });
-                                    if (!filledPostal)
-                                      setState(() {
-                                        errorPostal = true;
-                                      });
-                                    else
-                                      setState(() {
-                                        errorPostal = false;
                                       });
                                   }
                                 }
@@ -723,15 +718,17 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                       //register partner
                                       var registerResult =
                                           await registerPartnerMutation(
-                                        _name.text,
-                                        partnerAdd,
-                                        _accNo.text,
-                                        _email.text,
-                                        _ifscCode.text,
-                                        "",
-                                        checked,
-                                        selectedCompanyID,
-                                      );
+                                              _name.text,
+                                              partnerAdd,
+                                              _accNo.text,
+                                              _email.text,
+                                              _ifscCode.text,
+                                              "",
+                                              checked,
+                                              selectedCompanyID,
+                                              _aadharNo.text
+                                                  .replaceAll("-", "")
+                                                  .trim());
                                       setState(() {
                                         isLoading = false;
                                       });
@@ -807,7 +804,8 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                             filledLocality &&
                                             filledArea &&
                                             filledCity &&
-                                            filledPostal) ||
+                                            filledPostal &&
+                                            !errorPostal) ||
                                         (_currWidgetIndex == 2 &&
                                             (filledAcc && !invalidAcc) &&
                                             (filledifsc && !invalidIfsc) &&
@@ -841,7 +839,8 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                               filledLocality &&
                                               filledArea &&
                                               filledCity &&
-                                              filledPostal) ||
+                                              filledPostal &&
+                                              !errorPostal) ||
                                           (_currWidgetIndex == 2 &&
                                               (filledAcc && !invalidAcc) &&
                                               (filledifsc && !invalidIfsc) &&
@@ -1104,17 +1103,21 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                   //   }
                   // },
                   onChanged: (val) {
-                    if (_aadharNo.text.isEmpty)
-                      setState(() {
-                        filledAadhar = false;
-                        errorAadhar = true;
-                      });
-                    else
-                      setState(() {
-                        filledAadhar = true;
-                        validAadhar = true;
-                        errorAadhar = false;
-                      });
+                    if (_aadharNo.text.isEmpty) if (_aadharNo.text.isNotEmpty) {
+                      String thiAddhar = _aadharNo.text.replaceAll('-', '');
+                      if (thiAddhar != null &&
+                          thiAddhar.isNotEmpty &&
+                          thiAddhar.length < 12)
+                        setState(() {
+                          validAadhar = false;
+                          errorAadhar = false;
+                        });
+                      else
+                        setState(() {
+                          validAadhar = true;
+                          errorAadhar = true;
+                        });
+                    }
                     print('filledAadhar ... $filledAadhar');
                   },
                   style: TextStyle(
@@ -1627,7 +1630,8 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.number,
                   onChanged: (val) {
-                    if (_postalCode.text.isNotEmpty)
+                    if (_postalCode.text.isNotEmpty &&
+                        _postalCode.text.length == 6)
                       setState(() {
                         filledPostal = true;
                         errorPostal = false;
@@ -1635,6 +1639,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                     else
                       setState(() {
                         filledPostal = false;
+                        errorPostal = true;
                       });
                     print('filledPostal ... $filledPostal');
                   },
@@ -1683,6 +1688,17 @@ class _SignUpDetailsState extends State<SignUpDetails> {
             ],
           ),
         ),
+        if (filledPostal && errorPostal)
+          Container(
+            margin: EdgeInsets.only(top: 3),
+            child: Text(
+              'Oops! Looks like the postal code (6 digits) is not a valid.',
+              style: TextStyle(
+                color: zimkeyRed,
+                fontSize: 12,
+              ),
+            ),
+          ),
         SizedBox(
           height: 15,
         ),

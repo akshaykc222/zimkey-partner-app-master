@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
+
 import '../home/dashboard.dart';
 import '../models/partnerModel.dart';
 import '../shared/globalMutations.dart';
@@ -287,15 +288,19 @@ class _EditBankAccountState extends State<EditBankAccount> {
                             textInputAction: TextInputAction.done,
                             keyboardType: TextInputType.text,
                             onChanged: (val) {
-                              if (_ifsc.text.isNotEmpty)
+                              if (_ifsc.text.isNotEmpty &&
+                                  _ifsc.text.length == 11) {
                                 setState(() {
                                   filledIfsc = true;
                                   errorIfsc = false;
+                                  invalidIfsc = false;
                                 });
-                              else
+                              } else {
                                 setState(() {
+                                  invalidIfsc = true;
                                   filledIfsc = false;
                                 });
+                              }
                               print('filledIfsc ... $filledIfsc');
                             },
                             style: TextStyle(
@@ -362,42 +367,44 @@ class _EditBankAccountState extends State<EditBankAccount> {
                   Center(
                     child: GestureDetector(
                       onTap: () async {
-                        if (filledIfsc || filledaccno) {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          QueryResult updateAccResult =
-                              await updatePartnerAccountMutation(
-                                  _accnNo.text, _ifsc.text);
-                          setState(() {
-                            isLoading = false;
-                          });
-                          if (updateAccResult.hasException) {
-                            print(updateAccResult.exception);
+                        if (!invalidIfsc) {
+                          if (filledIfsc || filledaccno) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            QueryResult updateAccResult =
+                                await updatePartnerAccountMutation(
+                                    _accnNo.text, _ifsc.text);
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (updateAccResult.hasException) {
+                              print(updateAccResult.exception);
+                              showCustomDialog(
+                                  'Oops!',
+                                  "${updateAccResult.exception.toString()}",
+                                  context,
+                                  null);
+                            } else if (updateAccResult != null &&
+                                updateAccResult.data != null &&
+                                updateAccResult
+                                        .data!['updatePartnerPayoutAccount'] !=
+                                    null) {
+                              showCustomDialog(
+                                  'Yay!',
+                                  "Your bank account details has been updated successfully!",
+                                  context,
+                                  Dashboard(
+                                    index: 3,
+                                  ));
+                            }
+                          } else
                             showCustomDialog(
                                 'Oops!',
-                                "${updateAccResult.exception.toString()}",
+                                'Fill atleast one field to update.',
                                 context,
                                 null);
-                          } else if (updateAccResult != null &&
-                              updateAccResult.data != null &&
-                              updateAccResult
-                                      .data!['updatePartnerPayoutAccount'] !=
-                                  null) {
-                            showCustomDialog(
-                                'Yay!',
-                                "Your bank account details has been updated successfully!",
-                                context,
-                                Dashboard(
-                                  index: 3,
-                                ));
-                          }
-                        } else
-                          showCustomDialog(
-                              'Oops!',
-                              'Fill atleast one field to update.',
-                              context,
-                              null);
+                        }
                       },
                       child: Container(
                         width: 130,
