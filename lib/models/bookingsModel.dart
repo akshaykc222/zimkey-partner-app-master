@@ -1,4 +1,5 @@
 import 'package:enum_to_string/enum_to_string.dart';
+
 import 'jobModel.dart';
 import 'partnerModel.dart';
 import 'serviceModel.dart';
@@ -332,29 +333,31 @@ class BookingServiceItems {
   bool? canReschedule;
   bool? canUncommit;
   bool? canCancel;
+  bool? canStartJob;
 
-  BookingServiceItems({
-    this.id,
-    this.bookingServiceId,
-    this.bookingServiceItemStatus,
-    this.startDateTime,
-    this.endDateTime,
-    this.servicePartnerId,
-    this.bookingService,
-    this.reschedules,
-    this.subBookings,
-    this.bookingAddons,
-    this.workCode,
-    this.bookingServiceItemType,
-    this.modificationReason,
-    this.canCancel,
-    this.canReschedule,
-    this.canRework,
-    this.canUncommit,
-  });
+  BookingServiceItems(
+      {this.id,
+      this.bookingServiceId,
+      this.bookingServiceItemStatus,
+      this.startDateTime,
+      this.endDateTime,
+      this.servicePartnerId,
+      this.bookingService,
+      this.reschedules,
+      this.subBookings,
+      this.bookingAddons,
+      this.workCode,
+      this.bookingServiceItemType,
+      this.modificationReason,
+      this.canCancel,
+      this.canReschedule,
+      this.canRework,
+      this.canUncommit,
+      this.canStartJob});
 
   BookingServiceItems.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    canStartJob = json['canStartJob'];
     bookingServiceId = json['bookingServiceId'];
     bookingServiceItemStatus = json['bookingServiceItemStatus'] != null
         ? EnumToString.fromString(BookingServiceItemStatusTypeEnum.values,
@@ -403,6 +406,7 @@ class BookingServiceItems {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
+    data['canStartJob'] = this.canStartJob;
     data['bookingServiceId'] = this.bookingServiceId;
     data['bookingServiceItemStatus'] = this.bookingServiceItemStatus;
     data['startDateTime'] = this.startDateTime;

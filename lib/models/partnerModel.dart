@@ -150,7 +150,10 @@ class PartnerDetails {
       });
     }
     isAvailable = json['isAvailable'];
-    unavailableTill = json['unavailableTill'];
+    print("unavailableTill ${json['unavailableTill']}");
+    unavailableTill = json['unavailableTill'] == null
+        ? null
+        : DateTime.tryParse(json['unavailableTill']);
     photo = json['photo'] != null ? Media.fromJson(json['photo']) : null;
     if (json['walletLogs'] != null) {
       walletLogs = [];

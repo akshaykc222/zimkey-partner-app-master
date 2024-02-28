@@ -1246,8 +1246,7 @@ class _BookingWidgetState extends State<BookingWidget> {
     bookingStatus = ReCase(bookingStatus).titleCase;
     /////
     String calendarItemStatus = jobitem.partnerCalendarStatus.toString();
-    if (calendarItemStatus != null &&
-        calendarItemStatus.isNotEmpty &&
+    if (calendarItemStatus.isNotEmpty &&
         calendarItemStatus != 'null' &&
         calendarItemStatus.contains('.')) {
       calendarItemStatus = calendarItemStatus.split('.')[1];
@@ -1257,8 +1256,7 @@ class _BookingWidgetState extends State<BookingWidget> {
     ////
     var jobStatus =
         jobitem.bookingServiceItem!.bookingServiceItemStatus.toString();
-    if (jobStatus != null && jobStatus != 'null')
-      jobStatus = jobStatus!.split('.')[1];
+    if (jobStatus != 'null') jobStatus = jobStatus!.split('.')[1];
     switch (jobStatus) {
       case 'OPEN':
         {

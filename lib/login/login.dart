@@ -160,19 +160,43 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     setState(() {
       isLoading = true;
     });
-    var deviceInfo = DeviceInfoPlugin();
-    var fcm = await FirebaseMessaging.instance.getToken();
+    final firebaseMessaging = FirebaseMessaging.instance;
+    var token = await firebaseMessaging.getToken();
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    var d = androidInfo.model;
+    print('Running on ${androidInfo.model}'); // e.g. "Moto G (4)"
+    try {
+      final iosInfo = await deviceInfo.iosInfo;
+      var da = iosInfo.utsname.machine;
+    } catch (e) {}
+    print({
+      "phoneNumber": "+91${_mobile.text}",
+      "otp": otp,
+      "token": token,
+      "deviceId": Platform.isAndroid ? d : d,
+      "device": Platform.isAndroid ? "ANDROID" : "IOS",
+    });
     final MutationOptions _options = MutationOptions(
       document: gql(verifyOtp),
       variables: <String, dynamic>{
-        "data": {"phoneNumber": "+91${_mobile.text}", "otp": otp, "token": fcm}
+        "data": {
+          "phoneNumber": "+91${_mobile.text}",
+          "otp": otp,
+          "token": token,
+          "deviceId": Platform.isAndroid ? d : d,
+          "device": Platform.isAndroid ? "ANDROID" : "IOS",
+          "app": "PARTNER"
+        }
       },
     );
     setState(() {
       isLoading = true;
     });
+    print("working upto here");
     final QueryResult addAddlWorkResult =
         await globalGQLClient.value.mutate(_options);
+    print("result $addAddlWorkResult");
     setState(() {
       isLoading = false;
     });
@@ -584,7 +608,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                launchURL('https://www.zimkey.in/');
+                                launchURL('https://zimkey.in/page-terms');
                                 print('Terms tapped!!');
                               },
                           ),
@@ -603,7 +627,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                launchURL('https://www.zimkey.in/');
+                                launchURL('https://zimkey.in/privacy-policy');
                                 print('Terms tapped!!');
                               },
                           ),

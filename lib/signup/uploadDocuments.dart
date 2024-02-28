@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -43,11 +44,24 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   String? fileName;
   DocOptions? selectedDocType;
   List<String?> mediaIds = [];
+  String frontImagePath = "";
   bool isLoading = false;
   FirebaseAuth auth = FirebaseAuth.instance;
   bool aadharUplaoded = false;
 
   List<DocOptions> docOptions = [];
+  Future<String> calculateHash(String filePath) async {
+    final file = File(filePath);
+    final bytes = await file.readAsBytes();
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Future<bool> areFilesIdentical(String filePath1, String filePath2) async {
+    final hash1 = await calculateHash(filePath1);
+    final hash2 = await calculateHash(filePath2);
+    return hash1 == hash2;
+  }
 
   Future getImage(DocOptions? doctype, String? frontOrBack) async {
     if (doctype != null && doctype != null) {
@@ -58,82 +72,175 @@ class _UploadDocumentsState extends State<UploadDocuments> {
       setState(() {
         isLoading = true;
       });
-      await picker.pickImage(source: ImageSource.gallery).then((value) {
+      await picker.pickImage(source: ImageSource.gallery).then((value) async {
         pickedFile = value;
         if (pickedFile != null) {
-          uploadImage(pickedFile.path, doctype.code, frontOrBack)
-              .then((value) async {
-            if (value!.isNotEmpty) {
-              //success
-              setState(() {
-                photoId = value;
-                mediaIds.add(photoId);
-                _image = File(pickedFile.path);
-              });
-              if (frontOrBack != null) {
-                if (frontOrBack == "front")
-                  setState(() {
-                    frontphotoId = photoId;
-                    selectedDocType!.frontId = frontphotoId;
-                  });
-                else if (frontOrBack == "back") {
-                  setState(() {
-                    backphotoId = photoId;
-                    selectedDocType!.backId = backphotoId;
-                  });
-                }
-              }
-              //runmutation
-              var result = await uploadDocMutation(doctype.code, mediaIds);
+          if (frontOrBack == "back") {
+            final isSameImage =
+                await areFilesIdentical(frontImagePath, value?.path ?? "");
+            print("wokring on back front image $isSameImage");
+            if (isSameImage) {
+              print("showing dialog 12");
               setState(() {
                 isLoading = false;
               });
-              if (result != null &&
-                  result.data != null &&
-                  result.data!['updatePartnerDocument'] != null) {
-                print('success  partner upload!!!!!');
-                for (DocOptions op in docOptions) {
-                  if (op.code == doctype.code) {
-                    setState(() {
-                      op.isUploaded = true;
-                      op.mediaId!.add(photoId);
-                    });
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Please select another image.")));
+            } else {
+              uploadImage(pickedFile.path, doctype.code, frontOrBack)
+                  .then((value) async {
+                if (value!.isNotEmpty) {
+                  //success
+                  setState(() {
+                    photoId = value;
+                    mediaIds.add(photoId);
+                    _image = File(pickedFile.path);
+                  });
+                  if (frontOrBack != null) {
+                    if (frontOrBack == "front")
+                      setState(() {
+                        frontphotoId = photoId;
+                        frontImagePath = pickedFile.path;
+                        selectedDocType!.frontId = frontphotoId;
+                      });
+                    else if (frontOrBack == "back") {
+                      setState(() {
+                        backphotoId = photoId;
+                        selectedDocType!.backId = backphotoId;
+                      });
+                    }
                   }
-                }
-              } else {
+                  //runmutation
+                  var result = await uploadDocMutation(doctype.code, mediaIds);
+                  setState(() {
+                    isLoading = false;
+                  });
+                  if (result != null &&
+                      result.data != null &&
+                      result.data!['updatePartnerDocument'] != null) {
+                    print('success  partner upload!!!!!');
+                    for (DocOptions op in docOptions) {
+                      if (op.code == doctype.code) {
+                        setState(() {
+                          op.isUploaded = true;
+                          op.mediaId!.add(photoId);
+                        });
+                      }
+                    }
+                  } else {
+                    setState(() {
+                      _image = null;
+                      photoId = null;
+                    });
+                    for (DocOptions op in docOptions) {
+                      if (op.code == doctype.code) {
+                        setState(() {
+                          op.mediaId!
+                              .removeWhere((element) => element == photoId);
+                        });
+                        if (op.mediaId == null || op.mediaId!.isEmpty)
+                          setState(() {
+                            op.isUploaded = false;
+                          });
+                        if (frontOrBack != null && frontOrBack == "front")
+                          setState(() {
+                            frontphotoId = null;
+                            op.frontId = null;
+                          });
+                        else if (frontOrBack != null && frontOrBack == "back")
+                          setState(() {
+                            backphotoId = null;
+                            op.backId = null;
+                          });
+                      }
+                    }
+                    showCustomDialog('Oops!!',
+                        'Upload Error - Please try again.', context, null);
+                  }
+                } // } else {
+                //   showCustomDialog(
+                //       'Oops!!', 'Upload Error - Please try again.', context, null);
+                // }
+              });
+              print("showing dialog");
+            }
+          } else {
+            uploadImage(pickedFile.path, doctype.code, frontOrBack)
+                .then((value) async {
+              if (value!.isNotEmpty) {
+                //success
                 setState(() {
-                  _image = null;
-                  photoId = null;
+                  photoId = value;
+                  mediaIds.add(photoId);
+                  _image = File(pickedFile.path);
                 });
-                for (DocOptions op in docOptions) {
-                  if (op.code == doctype.code) {
+                if (frontOrBack != null) {
+                  if (frontOrBack == "front")
                     setState(() {
-                      op.mediaId!.removeWhere((element) => element == photoId);
+                      frontphotoId = photoId;
+                      frontImagePath = pickedFile.path;
+                      selectedDocType!.frontId = frontphotoId;
                     });
-                    if (op.mediaId == null || op.mediaId!.isEmpty)
-                      setState(() {
-                        op.isUploaded = false;
-                      });
-                    if (frontOrBack != null && frontOrBack == "front")
-                      setState(() {
-                        frontphotoId = null;
-                        op.frontId = null;
-                      });
-                    else if (frontOrBack != null && frontOrBack == "back")
-                      setState(() {
-                        backphotoId = null;
-                        op.backId = null;
-                      });
+                  else if (frontOrBack == "back") {
+                    setState(() {
+                      backphotoId = photoId;
+                      selectedDocType!.backId = backphotoId;
+                    });
                   }
                 }
-                showCustomDialog('Oops!!', 'Upload Error - Please try again.',
-                    context, null);
-              }
-            } // } else {
-            //   showCustomDialog(
-            //       'Oops!!', 'Upload Error - Please try again.', context, null);
-            // }
-          });
+                //runmutation
+                var result = await uploadDocMutation(doctype.code, mediaIds);
+                setState(() {
+                  isLoading = false;
+                });
+                if (result != null &&
+                    result.data != null &&
+                    result.data!['updatePartnerDocument'] != null) {
+                  print('success  partner upload!!!!!');
+                  for (DocOptions op in docOptions) {
+                    if (op.code == doctype.code) {
+                      setState(() {
+                        op.isUploaded = true;
+                        op.mediaId!.add(photoId);
+                      });
+                    }
+                  }
+                } else {
+                  setState(() {
+                    _image = null;
+                    photoId = null;
+                  });
+                  for (DocOptions op in docOptions) {
+                    if (op.code == doctype.code) {
+                      setState(() {
+                        op.mediaId!
+                            .removeWhere((element) => element == photoId);
+                      });
+                      if (op.mediaId == null || op.mediaId!.isEmpty)
+                        setState(() {
+                          op.isUploaded = false;
+                        });
+                      if (frontOrBack != null && frontOrBack == "front")
+                        setState(() {
+                          frontphotoId = null;
+                          op.frontId = null;
+                        });
+                      else if (frontOrBack != null && frontOrBack == "back")
+                        setState(() {
+                          backphotoId = null;
+                          op.backId = null;
+                        });
+                    }
+                  }
+                  showCustomDialog('Oops!!', 'Upload Error - Please try again.',
+                      context, null);
+                }
+              } // } else {
+              //   showCustomDialog(
+              //       'Oops!!', 'Upload Error - Please try again.', context, null);
+              // }
+            });
+          }
         } else {
           setState(() {
             isLoading = false;
@@ -299,102 +406,88 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                         aadharUplaoded = true;
                       });
                   }
-                  if (!aadharUplaoded)
-                    showCustomDialog('Oops!',
-                        'Aadhar card copy must be uploaded.', context, null);
-                  else {
-                    PartnerUser partnerUser;
-                    List<PartnerPendingTaskEnum?>? partnerProgressStage = [];
-                    var userResult = await getUserOnly();
-                    if (userResult != null &&
-                        userResult.data != null &&
-                        userResult.data!['me'] != null) {
-                      print('logged in user ');
-                      partnerUser =
-                          PartnerUser.fromJson(userResult.data!['me']);
-                      fbState.setPartnerUser(partnerUser);
-                      fbState.setIsRegistered(
-                          partnerUser.isPartnerRegistered.toString());
-                      if (partnerUser != null &&
-                          partnerUser.isPartnerRegistered!) {
-                        if (partnerUser.userType!.toLowerCase() != "customer" &&
-                            partnerUser.partnerDetails != null) {
-                          //Check Partner progress
-                          partnerProgressStage.clear();
-                          if (partnerUser.partnerDetails != null &&
-                              partnerUser.partnerDetails!.pendingTasks !=
-                                  null &&
-                              partnerUser
-                                  .partnerDetails!.pendingTasks!.isNotEmpty) {
-                            partnerProgressStage =
-                                partnerUser.partnerDetails!.pendingTasks;
-                            fbState.setPartnerProgress(partnerProgressStage!);
-                            String stage = partnerProgressStage[0].toString();
-                            if (stage.contains('.'))
-                              stage = stage.split('.')[1];
-                            switch (stage) {
-                              case 'UPLOAD_PROFILE_PICTURE':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: UploadProfilePic(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'UPLOAD_DOCUMENT':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: UploadDocuments(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'SELECT_SERVICE':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: SetUpServiceList(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'SELECT_AREA':
-                                {
-                                  await getAreasQuery();
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: SelectSearcableAreas(
-                                          fbState: fbState,
-                                        ),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                            }
-                          } else
-                            sugnupConfirmationDialog('Thank You!',
-                                'We have recievd your registration request. You will be contacted shortly.');
-                        } else {
-                          Navigator.push(
-                              context,
-                              PageTransition(
-                                type: PageTransitionType.rightToLeft,
-                                child: SignUpDetails(
-                                  fbstate: fbState,
-                                ),
-                                duration: Duration(milliseconds: 400),
-                              ));
-                        }
+                  // if (!aadharUplaoded)
+                  //   showCustomDialog('Oops!',
+                  //       'Aadhar card copy must be uploaded.', context, null);
+                  // else {
+                  PartnerUser partnerUser;
+                  List<PartnerPendingTaskEnum?>? partnerProgressStage = [];
+                  var userResult = await getUserOnly();
+                  if (userResult != null &&
+                      userResult.data != null &&
+                      userResult.data!['me'] != null) {
+                    print('logged in user ');
+                    partnerUser = PartnerUser.fromJson(userResult.data!['me']);
+                    fbState.setPartnerUser(partnerUser);
+                    fbState.setIsRegistered(
+                        partnerUser.isPartnerRegistered.toString());
+                    if (partnerUser != null &&
+                        partnerUser.isPartnerRegistered!) {
+                      if (partnerUser.userType!.toLowerCase() != "customer" &&
+                          partnerUser.partnerDetails != null) {
+                        //Check Partner progress
+                        partnerProgressStage.clear();
+                        if (partnerUser.partnerDetails != null &&
+                            partnerUser.partnerDetails!.pendingTasks != null &&
+                            partnerUser
+                                .partnerDetails!.pendingTasks!.isNotEmpty) {
+                          partnerProgressStage =
+                              partnerUser.partnerDetails!.pendingTasks;
+                          fbState.setPartnerProgress(partnerProgressStage!);
+                          String stage = partnerProgressStage[0].toString();
+                          if (stage.contains('.')) stage = stage.split('.')[1];
+                          switch (stage) {
+                            case 'UPLOAD_PROFILE_PICTURE':
+                              {
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rightToLeft,
+                                      child: UploadProfilePic(),
+                                      duration: Duration(milliseconds: 400),
+                                    ));
+                                break;
+                              }
+                            case 'UPLOAD_DOCUMENT':
+                              {
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rightToLeft,
+                                      child: UploadDocuments(),
+                                      duration: Duration(milliseconds: 400),
+                                    ));
+                                break;
+                              }
+                            case 'SELECT_SERVICE':
+                              {
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rightToLeft,
+                                      child: SetUpServiceList(),
+                                      duration: Duration(milliseconds: 400),
+                                    ));
+                                break;
+                              }
+                            case 'SELECT_AREA':
+                              {
+                                await getAreasQuery();
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rightToLeft,
+                                      child: SelectSearcableAreas(
+                                        fbState: fbState,
+                                      ),
+                                      duration: Duration(milliseconds: 400),
+                                    ));
+                                break;
+                              }
+                          }
+                        } else
+                          sugnupConfirmationDialog('Thank You!',
+                              'We have recievd your registration request. You will be contacted shortly.');
                       } else {
                         Navigator.push(
                             context,
@@ -406,8 +499,19 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                               duration: Duration(milliseconds: 400),
                             ));
                       }
+                    } else {
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            child: SignUpDetails(
+                              fbstate: fbState,
+                            ),
+                            duration: Duration(milliseconds: 400),
+                          ));
                     }
                   }
+                  // }
                 } else {
                   showCustomDialog(
                       'Oops!',

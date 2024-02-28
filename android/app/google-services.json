@@ -1,42 +1,34 @@
 {
   "project_info": {
-    "project_number": "172717487893",
-    "project_id": "taskey-935ac",
-    "storage_bucket": "taskey-935ac.appspot.com"
+    "project_number": "57540737332",
+    "project_id": "zimkey-admin-panel",
+    "storage_bucket": "zimkey-admin-panel.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:172717487893:android:a93eb5a22b71bc5fc25b1c",
+        "mobilesdk_app_id": "1:57540737332:android:a2b8d7ee63250206298d61",
         "android_client_info": {
           "package_name": "com.zimkey.customer"
         }
       },
       "oauth_client": [
         {
-          "client_id": "172717487893-5ltf9qf0kqqj4va8nbj7acesrv0slmhv.apps.googleusercontent.com",
+          "client_id": "57540737332-5s8o1pgc3dm8105m40b3q125vdv685s4.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDVaEZ5bq2pW4wrgQc5D_izsK1hYPUIpPU"
+          "current_key": "AIzaSyBzQIIDEtr97LaL7uDHJKt1IJGHAO6rWiU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "172717487893-5ltf9qf0kqqj4va8nbj7acesrv0slmhv.apps.googleusercontent.com",
+              "client_id": "57540737332-5s8o1pgc3dm8105m40b3q125vdv685s4.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "172717487893-06g381pi4dtsjkqng0r6ss55tuhvldlv.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.taskey.taskey",
-                "app_store_id": "1559168209"
-              }
             }
           ]
         }
@@ -44,36 +36,28 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:172717487893:android:d84bec280c691b82c25b1c",
+        "mobilesdk_app_id": "1:57540737332:android:679677f141b502fc298d61",
         "android_client_info": {
           "package_name": "com.zimkey.partner"
         }
       },
       "oauth_client": [
         {
-          "client_id": "172717487893-5ltf9qf0kqqj4va8nbj7acesrv0slmhv.apps.googleusercontent.com",
+          "client_id": "57540737332-5s8o1pgc3dm8105m40b3q125vdv685s4.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDVaEZ5bq2pW4wrgQc5D_izsK1hYPUIpPU"
+          "current_key": "AIzaSyBzQIIDEtr97LaL7uDHJKt1IJGHAO6rWiU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "172717487893-5ltf9qf0kqqj4va8nbj7acesrv0slmhv.apps.googleusercontent.com",
+              "client_id": "57540737332-5s8o1pgc3dm8105m40b3q125vdv685s4.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "172717487893-06g381pi4dtsjkqng0r6ss55tuhvldlv.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.taskey.taskey",
-                "app_store_id": "1559168209"
-              }
             }
           ]
         }

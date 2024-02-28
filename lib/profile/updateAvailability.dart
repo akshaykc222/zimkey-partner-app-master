@@ -1,16 +1,17 @@
-import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/state_manager.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 
 import '../home/dashboard.dart';
+import '../models/partnerModel.dart';
 import '../shared/globalMutations.dart';
 import '../shared/globals.dart';
+import '../shared/gqlQueries.dart';
 import '../theme.dart';
 
 class EditAvailability extends StatefulWidget {
@@ -43,6 +44,8 @@ class _EditAvailabilityState extends State<EditAvailability> {
         fbState.partnerUser.value != null &&
         fbState.partnerUser.value!.partnerDetails != null)
       isopen = fbState.partnerUser.value!.partnerDetails!.isAvailable;
+    print(
+        "unable from ${fbState.partnerUser.value!.partnerDetails!.unavailableTill}");
     if (fbState.partnerUser.value!.partnerDetails!.unavailableTill != null) {
       unavailableTill = DateFormat('dd/MM/yyyy')
           .format(fbState.partnerUser.value!.partnerDetails!.unavailableTill!);
@@ -167,19 +170,33 @@ class _EditAvailabilityState extends State<EditAvailability> {
                     ),
                     isopen!
                         ? Text(
-                            'How long will you be unavailble for?',
+                            'How long will you be unavailable for?',
                             style: TextStyle(
                               fontSize: 13,
                               color: zimkeyOrange,
                             ),
                           )
-                        : Text(
-                            'Your account is inacative till $unavailableTill.',
-                            style: TextStyle(
-                                fontSize: 13,
-                                color: zimkeyOrange,
-                                fontWeight: FontWeight.bold),
-                          ),
+                        : Query(
+                            options: QueryOptions(
+                              document: gql(getMe),
+                            ),
+                            builder: (
+                              QueryResult result, {
+                              VoidCallback? refetch,
+                              FetchMore? fetchMore,
+                            }) {
+                              PartnerUser tempUser;
+                              tempUser =
+                                  PartnerUser.fromJson(result.data!['me']);
+
+                              return Text(
+                                'Your account is inactive till ${DateFormat("dd-MM-yyyy").format(tempUser.partnerDetails?.unavailableTill ?? DateTime.now())}.',
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: zimkeyOrange,
+                                    fontWeight: FontWeight.bold),
+                              );
+                            }),
                     // SizedBox(
                     //   height: 5,
                     // ),

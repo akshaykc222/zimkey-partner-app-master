@@ -52,6 +52,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
   final FocusNode _localityNode = FocusNode();
   final FocusNode _landmarkNode = FocusNode();
   final FocusNode _companyNameNode = FocusNode();
+  final FocusNode _areYouCompany = FocusNode();
 
   //--------------------
   KeyboardActionsConfig _buildConfig(BuildContext context) {
@@ -636,7 +637,7 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                                     setState(() {
                                       _currWidgetIndex++;
                                       FocusScope.of(context)
-                                          .requestFocus(_accNoNode);
+                                          .requestFocus(_areYouCompany);
                                       _pagecontroller.nextPage(
                                         duration: Duration(milliseconds: 400),
                                         curve: Curves.easeIn,
@@ -1103,19 +1104,21 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                   //   }
                   // },
                   onChanged: (val) {
-                    if (_aadharNo.text.isEmpty) if (_aadharNo.text.isNotEmpty) {
+                    if (val.isNotEmpty) {
                       String thiAddhar = _aadharNo.text.replaceAll('-', '');
                       if (thiAddhar != null &&
                           thiAddhar.isNotEmpty &&
-                          thiAddhar.length < 12)
+                          thiAddhar.length != 12)
                         setState(() {
                           validAadhar = false;
-                          errorAadhar = false;
+                          errorAadhar = true;
+                          filledAadhar = false;
                         });
                       else
                         setState(() {
                           validAadhar = true;
-                          errorAadhar = true;
+                          errorAadhar = false;
+                          filledAadhar = true;
                         });
                     }
                     print('filledAadhar ... $filledAadhar');
@@ -1729,17 +1732,20 @@ class _SignUpDetailsState extends State<SignUpDetails> {
               SizedBox(
                 width: 5,
               ),
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    children: <TextSpan>[
-                      TextSpan(
-                          text: 'Are you part of a company?',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: zimkeyDarkGrey,
-                          )),
-                    ],
+              Focus(
+                focusNode: _areYouCompany,
+                child: Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(
+                            text: 'Are you part of a company?',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: zimkeyDarkGrey,
+                            )),
+                      ],
+                    ),
                   ),
                 ),
               ),

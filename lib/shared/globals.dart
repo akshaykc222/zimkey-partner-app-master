@@ -137,7 +137,12 @@ showCustomDialog(
 
 //Launch URL
 Future<void> launchURL(String _url) async {
-  await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
+  try {
+    print("lauching url $_url ${await canLaunchUrl(Uri.parse(_url))}");
+    await canLaunchUrl(Uri.parse(_url))
+        ? await launchUrl(Uri.parse(_url))
+        : throw 'Could not launch $_url';
+  } catch (e) {}
 }
 
 //Pageview Bubble Indicators

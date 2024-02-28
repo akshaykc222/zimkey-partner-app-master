@@ -144,6 +144,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
   @override
   Widget build(BuildContext context) {
+    print("object ${widget.jobitem?.bookingServiceItem?.toJson()}");
     return Stack(
       children: [
         Scaffold(
@@ -278,7 +279,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                             null) {
                                       showCustomDialog(
                                         'Yay!',
-                                        'You\'ve sccessfully approved this job.',
+                                        'You\'ve successfully approved this job.',
                                         context,
                                         Dashboard(
                                           index: 2,
@@ -468,12 +469,9 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                             //     // ),
                             //   ),
                             //Uncommit job ------
-                            if (widget.jobitem!.bookingServiceItem != null &&
-                                widget.jobitem!.bookingServiceItem!
-                                        .canUncommit !=
-                                    null &&
-                                widget
-                                    .jobitem!.bookingServiceItem!.canUncommit!)
+                            if (widget
+                                    .jobitem?.bookingServiceItem?.canStartJob ==
+                                true)
                               Container(
                                 margin: EdgeInsets.only(bottom: 15),
                                 padding: EdgeInsets.symmetric(horizontal: 15),
@@ -2149,8 +2147,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
           //Booking Comments-----
           if (jobitem.booking!.bookingNote != null &&
               jobitem.booking!.bookingNote!.isNotEmpty &&
-              jobitem.booking!.bookingNote!.split('-')[1] != null &&
-              jobitem.booking!.bookingNote!.split(' - ')[1].isNotEmpty)
+              jobitem.booking!.bookingNote!.split(' - ').isNotEmpty)
             bookingCommentsSection(jobitem),
           //Reschedules--------
           if (widget.jobitem!.bookingServiceItem!.reschedules != null &&
@@ -2294,8 +2291,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
     String? bookNoteAdditional;
     if (job.booking!.bookingNote != null &&
         job.booking!.bookingNote!.isNotEmpty &&
-        job.booking!.bookingNote!.split('-')[1] != null &&
-        job.booking!.bookingNote!.split(' - ')[1].isNotEmpty)
+        job.booking!.bookingNote!.split(' - ').isNotEmpty)
       bookNoteOther = job.booking!.bookingNote;
     if (bookNoteOther != null) {
       if (bookNoteOther.toLowerCase().contains('service details -'))

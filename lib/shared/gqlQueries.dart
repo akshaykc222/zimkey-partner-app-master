@@ -16,6 +16,7 @@ String getMe = """
         id
         approved
         aadharNumber
+        unavailableTill
         walletLogs {
           id
           transactionDate
@@ -356,6 +357,7 @@ String getPartnerCalendar =
           id      
           canReschedule
           canUncommit
+          canStartJob
           workCode
           reschedules {
             rescheduledBy
