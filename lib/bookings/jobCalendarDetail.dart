@@ -215,6 +215,137 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                   color: zimkeyWhite,
                   child: Column(
                     children: [
+                      widget.jobitem?.bookingServiceItem?.canStartJob == true ||
+                              widget.jobitem?.bookingServiceItem?.canUncommit ==
+                                  true
+                          ? Container(
+                              margin: EdgeInsets.only(bottom: 15),
+                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  //unassign job
+                                  widget.jobitem?.bookingServiceItem
+                                              ?.canUncommit ==
+                                          true
+                                      ? Expanded(
+                                          child: InkWell(
+                                            onTap: () async {
+                                              if (widget.jobitem!.serviceDate!
+                                                      .difference(
+                                                          DateTime.now())
+                                                      .inHours <=
+                                                  3)
+                                                unassignConfirmDialog(
+                                                    'Oops!',
+                                                    'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
+                                                    context,
+                                                    false,
+                                                    widget.jobitem,
+                                                    "Unassign");
+                                              else
+                                                await uncommitJobMutation(widget
+                                                    .jobitem!
+                                                    .bookingServiceItem!
+                                                    .id);
+                                              widget.refetchJobs!();
+                                            },
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 15, horizontal: 20),
+                                              decoration: BoxDecoration(
+                                                color: zimkeyOrange,
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: zimkeyLightGrey
+                                                        .withOpacity(0.1),
+                                                    blurRadius:
+                                                        5.0, // soften the shadow
+                                                    spreadRadius:
+                                                        2.0, //extend the shadow
+                                                    offset: Offset(
+                                                      1.0, // Move to right 10  horizontally
+                                                      1.0, // Move to bottom 10 Vertically
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              child: Text(
+                                                'Unassign Job',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: zimkeyWhite,
+                                                  fontFamily: 'Inter',
+                                                  // fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  //start job
+                                  widget.jobitem?.bookingServiceItem
+                                              ?.canStartJob ==
+                                          true
+                                      ? Expanded(
+                                          child: InkWell(
+                                            onTap: () async {
+                                              _workCode.clear();
+                                              startJobDialog(
+                                                'Verification',
+                                                'Enter job work code for verification.',
+                                                context,
+                                                null,
+                                                widget.jobitem,
+                                              );
+                                            },
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 15, horizontal: 20),
+                                              decoration: BoxDecoration(
+                                                color: zimkeyOrange,
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: zimkeyLightGrey
+                                                        .withOpacity(0.1),
+                                                    blurRadius:
+                                                        5.0, // soften the shadow
+                                                    spreadRadius:
+                                                        2.0, //extend the shadow
+                                                    offset: Offset(
+                                                      1.0, // Move to right 10  horizontally
+                                                      1.0, // Move to bottom 10 Vertically
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              child: Text(
+                                                'Start Job',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: zimkeyWhite,
+                                                  fontFamily: 'Inter',
+                                                  // fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
+                                ],
+                              ),
+                            )
+                          : SizedBox(),
                       if (jobStatus!
                           .toLowerCase()
                           .contains('partner approval pending'))
@@ -469,129 +600,9 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                             //     // ),
                             //   ),
                             //Uncommit job ------
-                            if (widget
-                                    .jobitem?.bookingServiceItem?.canStartJob ==
-                                true)
-                              Container(
-                                margin: EdgeInsets.only(bottom: 15),
-                                padding: EdgeInsets.symmetric(horizontal: 15),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    //unassign job
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () async {
-                                          if (widget.jobitem!.serviceDate!
-                                                  .difference(DateTime.now())
-                                                  .inHours <=
-                                              3)
-                                            unassignConfirmDialog(
-                                                'Oops!',
-                                                'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
-                                                context,
-                                                false,
-                                                widget.jobitem,
-                                                "Unassign");
-                                          else
-                                            await uncommitJobMutation(widget
-                                                .jobitem!
-                                                .bookingServiceItem!
-                                                .id);
-                                          widget.refetchJobs!();
-                                        },
-                                        child: Container(
-                                          alignment: Alignment.center,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 20),
-                                          decoration: BoxDecoration(
-                                            color: zimkeyOrange,
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: zimkeyLightGrey
-                                                    .withOpacity(0.1),
-                                                blurRadius:
-                                                    5.0, // soften the shadow
-                                                spreadRadius:
-                                                    2.0, //extend the shadow
-                                                offset: Offset(
-                                                  1.0, // Move to right 10  horizontally
-                                                  1.0, // Move to bottom 10 Vertically
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                          child: Text(
-                                            'Unassign Job',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: zimkeyWhite,
-                                              fontFamily: 'Inter',
-                                              // fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    //start job
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: () async {
-                                          _workCode.clear();
-                                          startJobDialog(
-                                            'Verification',
-                                            'Enter job work code for verification.',
-                                            context,
-                                            null,
-                                            widget.jobitem,
-                                          );
-                                        },
-                                        child: Container(
-                                          alignment: Alignment.center,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 20),
-                                          decoration: BoxDecoration(
-                                            color: zimkeyOrange,
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: zimkeyLightGrey
-                                                    .withOpacity(0.1),
-                                                blurRadius:
-                                                    5.0, // soften the shadow
-                                                spreadRadius:
-                                                    2.0, //extend the shadow
-                                                offset: Offset(
-                                                  1.0, // Move to right 10  horizontally
-                                                  1.0, // Move to bottom 10 Vertically
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                          child: Text(
-                                            'Start Job',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: zimkeyWhite,
-                                              fontFamily: 'Inter',
-                                              // fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                           ],
                         ),
+
                       //finish job
                       if (taskStage == 2)
                         InkWell(
