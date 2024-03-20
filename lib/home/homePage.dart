@@ -93,18 +93,18 @@ class _HomePageState extends State<Home> {
         currentPageValue = controller.page;
       });
     });
-    //fav tiles controller
-    fav_controller.addListener(() {
-      setState(() {
-        fav_index = fav_controller.page;
-      });
-    });
-    //thumbnail controller
-    banner_controller.addListener(() {
-      setState(() {
-        banner_index = banner_controller.page;
-      });
-    });
+    // //fav tiles controller
+    // fav_controller.addListener(() {
+    //   setState(() {
+    //     fav_index = fav_controller.page;
+    //   });
+    // });
+    // //thumbnail controller
+    // banner_controller.addListener(() {
+    //   setState(() {
+    //     banner_index = banner_controller.page;
+    //   });
+    // });
     super.initState();
   }
 

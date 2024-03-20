@@ -78,7 +78,7 @@ class _BookingsState extends State<JobsCalendar>
   Animation? _colorTweenForegroundOff;
 
   // when swiping, the _controller.index value only changes after the animation, therefore, we need this to trigger the animations and save the current index
-  int _currentIndex = 0;
+  ValueNotifier<int> _currentIndex = ValueNotifier(0);
 
   // saves the previous active tab
   int _prevControllerIndex = 0;
@@ -105,7 +105,8 @@ class _BookingsState extends State<JobsCalendar>
   // regist if the the button was tapped
   bool _buttonTap = false;
   updateTab(int pos) {
-    _currentIndex = pos;
+    _currentIndex.value = pos;
+    _currentIndex.notifyListeners();
     _controller?.animateTo(pos);
   }
 
@@ -317,38 +318,43 @@ class _BookingsState extends State<JobsCalendar>
                               _scrollTo(index);
                             });
                           },
-                          child: AnimatedBuilder(
-                            animation: _colorTweenBackgroundOn,
-                            builder: (context, child) => Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 5),
-                              alignment: Alignment.center,
-                              width: MediaQuery.of(context).size.width / 3.5,
-                              key: _keys[index],
-                              child: Column(
-                                children: [
-                                  AutoSizeText(
-                                    _tabs[index],
-                                    minFontSize: 12,
-                                    maxFontSize: 14,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                          child: ValueListenableBuilder(
+                              valueListenable: _currentIndex,
+                              builder: (context, data, child) {
+                                return AnimatedBuilder(
+                                  animation: _colorTweenBackgroundOn,
+                                  builder: (context, child) => Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 5),
+                                    alignment: Alignment.center,
+                                    width:
+                                        MediaQuery.of(context).size.width / 3.5,
+                                    key: _keys[index],
+                                    child: Column(
+                                      children: [
+                                        AutoSizeText(
+                                          _tabs[index],
+                                          minFontSize: 12,
+                                          maxFontSize: 14,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 3,
+                                        ),
+                                        CircleAvatar(
+                                          radius: 3,
+                                          backgroundColor: (index == data)
+                                              ? zimkeyOrange
+                                              : Colors.transparent,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(
-                                    height: 3,
-                                  ),
-                                  CircleAvatar(
-                                    radius: 3,
-                                    backgroundColor: (index == _currentIndex)
-                                        ? zimkeyOrange
-                                        : Colors.transparent,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                                );
+                              }),
                         )
                     ],
                     // },
@@ -1000,10 +1006,11 @@ class _BookingsState extends State<JobsCalendar>
   _setCurrentIndex(int index) {
     // if we're actually changing the index
     if (index != _currentIndex) {
-      setState(() {
-        // change the index
-        _currentIndex = index;
-      });
+      // setState(() {
+      // change the index
+      _currentIndex.value = index;
+      _currentIndex.notifyListeners();
+      // });
 
       // trigger the button animation
       _triggerAnimation();

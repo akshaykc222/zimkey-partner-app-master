@@ -278,12 +278,11 @@ class _RescheduleJobpageState extends State<RescheduleJobpage> {
           null);
       print(rescheduleJobResult.exception.toString());
     }
-    if (rescheduleJobResult != null &&
-        rescheduleJobResult.data != null &&
+    if (rescheduleJobResult.data != null &&
         rescheduleJobResult.data!['rescheduleJob'] != null) {
       showCustomDialog(
           'Yay!',
-          'Your request for job reschedule for the service  - ${widget.jobitem!.bookingServiceItem!.bookingService!.service!.name} for the new date - ${DateFormat("dd-MM-yyyy hh:mm a")} has been submitted successfully.\nYour request will be approved by the customer shortly.',
+          'Your request for job reschedule for the service  - ${widget.jobitem!.bookingServiceItem!.bookingService!.service!.name} for the new date - ${DateFormat("dd-MM-yyyy hh:mm a").format(scheduleTime!)} has been submitted successfully.\nYour request will be approved by the customer shortly.',
           context,
           Dashboard(
             index: 2,

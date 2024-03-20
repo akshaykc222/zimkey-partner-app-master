@@ -33,7 +33,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  int _currentIndex = 0;
+  ValueNotifier<int> _currentIndex = ValueNotifier(0);
   bool showSearch = false;
   final FbState fbState = Get.find();
   PartnerUser? userDetails;
@@ -45,15 +45,14 @@ class _DashboardState extends State<Dashboard> {
   FirebaseAuth auth = FirebaseAuth.instance;
 
   void onTabTapped(int index) {
-    setState(() {
-      print('currentindex $index');
-      _currentIndex = index;
-    });
+    print('currentindex $index');
+    _currentIndex.value = index;
+    _currentIndex.notifyListeners();
   }
 
   @override
   void initState() {
-    _currentIndex = widget.index ?? 0;
+    _currentIndex.value = widget.index ?? 0;
     FirebaseMessaging.onMessageOpenedApp.listen((event) {
       NotificationService.handleNavigation(event, context, () {});
     });
@@ -122,23 +121,27 @@ class _DashboardState extends State<Dashboard> {
                   'item data : ${userDetails?.partnerDetails?.disableAccount == false} autherized ${isPartnerAuthorized}');
               if (isPartnerAuthorized &&
                   (userDetails?.partnerDetails?.disableAccount == false))
-                return IndexedStack(
-                  sizing: StackFit.expand,
-                  index: _currentIndex,
-                  children: [
-                    Home(
-                      updateTab: onTabTapped,
-                    ),
-                    JobBoardPage(
-                      updateTab: onTabTapped,
-                    ),
-                    JobsCalendar(
-                      updateTab: onTabTapped,
-                      pos: widget.tabIndex,
-                    ),
-                    Profile(),
-                  ],
-                );
+                return ValueListenableBuilder(
+                    valueListenable: _currentIndex,
+                    builder: (context, data, child) {
+                      return IndexedStack(
+                        sizing: StackFit.expand,
+                        index: data,
+                        children: [
+                          Home(
+                            updateTab: onTabTapped,
+                          ),
+                          JobBoardPage(
+                            updateTab: onTabTapped,
+                          ),
+                          JobsCalendar(
+                            updateTab: onTabTapped,
+                            pos: widget.tabIndex,
+                          ),
+                          Profile(),
+                        ],
+                      );
+                    });
               else if (userDetails?.partnerDetails?.disableAccount == true)
                 return disableAccount();
               else
@@ -354,15 +357,18 @@ class _DashboardState extends State<Dashboard> {
       child: TextButton(
         style: flatButtonStyle,
         onPressed: () {
-          setState(() {
-            _currentIndex = index;
-          });
+          _currentIndex.value = index;
+          _currentIndex.notifyListeners();
         },
-        child: SvgPicture.asset(
-          icon,
-          height: index == 0 ? 29 : 24,
-          color: _currentIndex == index ? zimkeyOrange : zimkeyDarkGrey,
-        ),
+        child: ValueListenableBuilder(
+            valueListenable: _currentIndex,
+            builder: (context, data, child) {
+              return SvgPicture.asset(
+                icon,
+                height: index == 0 ? 29 : 24,
+                color: data == index ? zimkeyOrange : zimkeyDarkGrey,
+              );
+            }),
       ),
     );
   }

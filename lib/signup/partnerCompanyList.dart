@@ -88,8 +88,10 @@ class _PartnerCompaniesState extends State<PartnerCompanies> {
         }) {
           refetch1 = refetch!;
           fetchMoreData = fetchMore;
-          print("ere" + result.data!['getPartnerCompanies'].toString());
-          for (Map comps in result.data!['getPartnerCompanies']['data']) {
+          _searchResults.clear();
+          // print("ere" + result.data!['getPartnerCompanies'].toString());
+          for (Map comps
+              in (result.data?['getPartnerCompanies']['data'] ?? [])) {
             PartnerCompany temp;
             temp = PartnerCompany.fromJson(comps as Map<String, dynamic>);
             _searchResults.add(temp);

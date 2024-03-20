@@ -355,7 +355,7 @@ String getPartnerCalendar =
         bookingServiceItem {
           bookingServiceId
           bookingServiceItemType
-          
+          actualStartDateTime
           startDateTime
           endDateTime
           bookingServiceItemStatus

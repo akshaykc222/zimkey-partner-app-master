@@ -320,6 +320,7 @@ class BookingServiceItems {
   String? bookingServiceId;
   BookingServiceItemStatusTypeEnum? bookingServiceItemStatus;
   DateTime? startDateTime;
+  DateTime? actualStartDateTime;
   DateTime? endDateTime;
   String? servicePartnerId;
   BookingService? bookingService;
@@ -353,9 +354,13 @@ class BookingServiceItems {
       this.canReschedule,
       this.canRework,
       this.canUncommit,
-      this.canStartJob});
+      this.canStartJob,
+      this.actualStartDateTime});
 
   BookingServiceItems.fromJson(Map<String, dynamic> json) {
+    actualStartDateTime = actualStartDateTime == null
+        ? null
+        : DateTime.parse(json['actualStartDateTime']);
     id = json['id'];
     canStartJob = json['canStartJob'];
     bookingServiceId = json['bookingServiceId'];

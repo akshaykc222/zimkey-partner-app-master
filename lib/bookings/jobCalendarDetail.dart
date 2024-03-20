@@ -341,8 +341,16 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                     children: [
                                       //unassign job
                                       widget.jobitem?.bookingServiceItem
-                                                  ?.canUncommit ==
-                                              true
+                                                      ?.canUncommit ==
+                                                  true &&
+                                              ((widget.jobitem
+                                                          ?.partnerCalendarStatus !=
+                                                      PartnerCalendarStatusTypeEnum
+                                                          .CANCELED_CUSTOMER) ||
+                                                  (widget.jobitem
+                                                          ?.partnerCalendarStatus !=
+                                                      PartnerCalendarStatusTypeEnum
+                                                          .CANCELED_PARTNER))
                                           ? Expanded(
                                               child: InkWell(
                                                 onTap: () async {
@@ -410,8 +418,16 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       ),
                                       //start job
                                       widget.jobitem?.bookingServiceItem
-                                                  ?.canStartJob ==
-                                              true
+                                                      ?.canStartJob ==
+                                                  true &&
+                                              ((widget.jobitem
+                                                          ?.partnerCalendarStatus !=
+                                                      PartnerCalendarStatusTypeEnum
+                                                          .CANCELED_CUSTOMER) ||
+                                                  (widget.jobitem
+                                                          ?.partnerCalendarStatus !=
+                                                      PartnerCalendarStatusTypeEnum
+                                                          .CANCELED_PARTNER))
                                           ? Expanded(
                                               child: InkWell(
                                                 onTap: () async {
@@ -606,7 +622,14 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       ?.bookingServiceItemType?.index ==
                                   1 &&
                               widget.jobitem?.partnerCalendarStatus ==
-                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING))
+                                  PartnerCalendarStatusTypeEnum
+                                      .REWORK_PENDING) &&
+                          ((widget.jobitem?.partnerCalendarStatus !=
+                                  PartnerCalendarStatusTypeEnum
+                                      .CANCELED_CUSTOMER) ||
+                              (widget.jobitem?.partnerCalendarStatus !=
+                                  PartnerCalendarStatusTypeEnum
+                                      .CANCELED_PARTNER)))
                         Column(
                           children: [
                             //reschedule job-----------
@@ -2590,7 +2613,8 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
     endMin = min;
     endHr = '${DateTime.parse('${jobitem.serviceDate}').hour + 1}';
     if (endHr.toString().length < 2) endHr = '0$endHr';
-    var diff = jobitem.serviceDate!.difference(DateTime.now());
+    var diff = jobitem.bookingServiceItem!.actualStartDateTime!
+        .difference(DateTime.now());
     int jobdurationHrs = (diff.inHours % 24).abs();
     int jobdurationDays = diff.inDays.abs();
     /////////----------
