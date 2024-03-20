@@ -15,6 +15,8 @@ String getMe = """
       partnerDetails {
         id
         approved
+        isZimkeyPartner
+        disableAccount
         aadharNumber
         unavailableTill
         walletLogs {
@@ -353,6 +355,9 @@ String getPartnerCalendar =
         bookingServiceItem {
           bookingServiceId
           bookingServiceItemType
+          
+          startDateTime
+          endDateTime
           bookingServiceItemStatus
           id      
           canReschedule
@@ -580,6 +585,13 @@ mutation startJob(\$bookingServiceItemId: ID!, \$workCode: String!){
 }
 '''
     .replaceAll('\n', '');
+String rework = '''
+mutation ApproveReworkJob(\$bookingServiceItemId: ID!, \$status: Boolean!){
+    approveReworkJob(bookingServiceItemId: \$bookingServiceItemId, status: \$status)
+}
+
+'''
+    .replaceAll('\n', '');
 
 //Finish A Job
 String finishJob = '''
@@ -801,13 +813,21 @@ String getCmsContent = '''
 
 //Get Partner Companies
 String getPartnerCompanies = '''
- query getPartnerCompanies {
-    getPartnerCompanies {
+query getPartnerCompanies(\$pageNumber:Int,\$pageSize:Int,\$companyName:String) {
+  getPartnerCompanies(
+    pagination: {  
+       pageSize: \$pageSize
+        pageNumber: \$pageNumber
+        }
+    filters: { companyName: \$companyName }
+  ) {
+    data {
       id
       companyName
       companyAddress
     }
   }
+}
   '''
     .replaceAll('\n', '');
 

@@ -49,10 +49,18 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final FbState fbState = Get.put(FbState());
+
   late AuthLink authLink;
+
   late HttpLink httpLink;
+
   ValueNotifier<GraphQLClient>? client;
 
   initClient() {
@@ -95,6 +103,11 @@ class MyApp extends StatelessWidget {
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -119,6 +132,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
             visualDensity: VisualDensity.adaptivePlatformDensity,
             fontFamily: 'Inter',
+            useMaterial3: false,
             colorScheme:
                 ColorScheme.fromSwatch().copyWith(secondary: zimkeyOrange)),
       ),

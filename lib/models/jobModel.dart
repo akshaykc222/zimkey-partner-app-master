@@ -552,7 +552,8 @@ enum PartnerCalendarStatusTypeEnum {
   RESCHEDULED_PARTNER,
   RESCHEDULED_CUSTOMER,
   ADMIN_REASSIGNED,
-  DONE
+  DONE,
+  REWORK_PENDING
 }
 
 class Team {

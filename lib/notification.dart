@@ -1,8 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
+
+import 'home/dashboard.dart';
 
 class NotificationService {
   Future<void> _firebaseMessagingBackgroundHandler(
@@ -110,5 +114,28 @@ class NotificationService {
     await Dio().download(url, filePath);
 
     return filePath;
+  }
+
+  static handleNavigation(
+      RemoteMessage message, BuildContext context, Function defaultFun) {
+    print("data: ${message.data["type"]}");
+    switch (message.data['type']) {
+      case "NEW_JOB":
+        Navigator.push(
+          context,
+          PageTransition(
+            type: PageTransitionType.bottomToTop,
+            child: Dashboard(
+              index: 1,
+            ),
+            duration: Duration(milliseconds: 300),
+          ),
+        );
+        break;
+      default:
+        defaultFun;
+
+        break;
+    }
   }
 }

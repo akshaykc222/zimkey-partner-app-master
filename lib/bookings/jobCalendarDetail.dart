@@ -3,8 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:instant/instant.dart';
 import 'package:instant/instant.dart' as ins;
+import 'package:instant/instant.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:recase/recase.dart';
 import 'package:timeline_tile/timeline_tile.dart';
@@ -12,7 +12,7 @@ import 'package:zimkey_partner_app/models/team_model.dart';
 
 import '../fbState.dart';
 import '../home/dashboard.dart';
-import '../models/bookingsModel.dart';
+import '../models/bookingsModel.dart' as b;
 import '../models/jobModel.dart';
 import '../models/serviceModel.dart';
 import '../shared/globalMutations.dart';
@@ -61,11 +61,11 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
   //Finish query mutation-------
   Future<QueryResult> finishJobMutation(String? bookingServiceItemId) async {
-    List<AdditionalPaymentRefundInput> additionalPaymentRefunds = [];
+    List<b.AdditionalPaymentRefundInput> additionalPaymentRefunds = [];
     for (BookingAdditionalPayment addl in widget.jobitem!.bookingServiceItem!
         .bookingService!.bookingAdditionalPayments!) {
       if (addl.refundable!)
-        additionalPaymentRefunds.add(AdditionalPaymentRefundInput(
+        additionalPaymentRefunds.add(b.AdditionalPaymentRefundInput(
             amount: double.parse(addl.itemPrice.toString()),
             bookingAdditionalPaymentId: addl.id));
     }
@@ -144,7 +144,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
   @override
   Widget build(BuildContext context) {
-    print("object ${widget.jobitem?.bookingServiceItem?.toJson()}");
+    print("object ${widget.jobitem?.bookingServiceItem?.canUncommit}");
     return Stack(
       children: [
         Scaffold(
@@ -215,9 +215,11 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                   color: zimkeyWhite,
                   child: Column(
                     children: [
-                      widget.jobitem?.bookingServiceItem?.canStartJob == true ||
-                              widget.jobitem?.bookingServiceItem?.canUncommit ==
-                                  true
+                      widget.jobitem?.bookingServiceItem?.bookingServiceItemType
+                                      ?.index ==
+                                  1 &&
+                              widget.jobitem?.partnerCalendarStatus ==
+                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING
                           ? Container(
                               margin: EdgeInsets.only(bottom: 15),
                               padding: EdgeInsets.symmetric(horizontal: 15),
@@ -225,130 +227,253 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  //unassign job
-                                  widget.jobitem?.bookingServiceItem
-                                              ?.canUncommit ==
-                                          true
-                                      ? Expanded(
-                                          child: InkWell(
-                                            onTap: () async {
-                                              if (widget.jobitem!.serviceDate!
-                                                      .difference(
-                                                          DateTime.now())
-                                                      .inHours <=
-                                                  3)
-                                                unassignConfirmDialog(
-                                                    'Oops!',
-                                                    'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
-                                                    context,
-                                                    false,
-                                                    widget.jobitem,
-                                                    "Unassign");
-                                              else
-                                                await uncommitJobMutation(widget
-                                                    .jobitem!
-                                                    .bookingServiceItem!
-                                                    .id);
-                                              widget.refetchJobs!();
-                                            },
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 15, horizontal: 20),
-                                              decoration: BoxDecoration(
-                                                color: zimkeyOrange,
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: zimkeyLightGrey
-                                                        .withOpacity(0.1),
-                                                    blurRadius:
-                                                        5.0, // soften the shadow
-                                                    spreadRadius:
-                                                        2.0, //extend the shadow
-                                                    offset: Offset(
-                                                      1.0, // Move to right 10  horizontally
-                                                      1.0, // Move to bottom 10 Vertically
-                                                    ),
-                                                  )
-                                                ],
+                                  //accept job
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () async {
+                                        reworkJobDialog(
+                                            'Accept Job',
+                                            'Are you sure you want to accept this job.',
+                                            context,
+                                            null,
+                                            widget.jobitem,
+                                            true);
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 20),
+                                        decoration: BoxDecoration(
+                                          color: zimkeyOrange,
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: zimkeyLightGrey
+                                                  .withOpacity(0.1),
+                                              blurRadius:
+                                                  5.0, // soften the shadow
+                                              spreadRadius:
+                                                  2.0, //extend the shadow
+                                              offset: Offset(
+                                                1.0, // Move to right 10  horizontally
+                                                1.0, // Move to bottom 10 Vertically
                                               ),
-                                              child: Text(
-                                                'Unassign Job',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: zimkeyWhite,
-                                                  fontFamily: 'Inter',
-                                                  // fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
+                                            )
+                                          ],
+                                        ),
+                                        child: Text(
+                                          'Accept',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: zimkeyWhite,
+                                            fontFamily: 'Inter',
+                                            // fontWeight: FontWeight.bold,
                                           ),
-                                        )
-                                      : SizedBox(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                   SizedBox(
                                     width: 10,
                                   ),
                                   //start job
-                                  widget.jobitem?.bookingServiceItem
-                                              ?.canStartJob ==
-                                          true
-                                      ? Expanded(
-                                          child: InkWell(
-                                            onTap: () async {
-                                              _workCode.clear();
-                                              startJobDialog(
-                                                'Verification',
-                                                'Enter job work code for verification.',
-                                                context,
-                                                null,
-                                                widget.jobitem,
-                                              );
-                                            },
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 15, horizontal: 20),
-                                              decoration: BoxDecoration(
-                                                color: zimkeyOrange,
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: zimkeyLightGrey
-                                                        .withOpacity(0.1),
-                                                    blurRadius:
-                                                        5.0, // soften the shadow
-                                                    spreadRadius:
-                                                        2.0, //extend the shadow
-                                                    offset: Offset(
-                                                      1.0, // Move to right 10  horizontally
-                                                      1.0, // Move to bottom 10 Vertically
-                                                    ),
-                                                  )
-                                                ],
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () async {
+                                        reworkJobDialog(
+                                            'Accept Job',
+                                            'Are you sure you want to accept this job.',
+                                            context,
+                                            null,
+                                            widget.jobitem,
+                                            false);
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 20),
+                                        decoration: BoxDecoration(
+                                          color: zimkeyOrange,
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: zimkeyLightGrey
+                                                  .withOpacity(0.1),
+                                              blurRadius:
+                                                  5.0, // soften the shadow
+                                              spreadRadius:
+                                                  2.0, //extend the shadow
+                                              offset: Offset(
+                                                1.0, // Move to right 10  horizontally
+                                                1.0, // Move to bottom 10 Vertically
                                               ),
-                                              child: Text(
-                                                'Start Job',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: zimkeyWhite,
-                                                  fontFamily: 'Inter',
-                                                  // fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
+                                            )
+                                          ],
+                                        ),
+                                        child: Text(
+                                          'Reject',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: zimkeyWhite,
+                                            fontFamily: 'Inter',
+                                            // fontWeight: FontWeight.bold,
                                           ),
-                                        )
-                                      : SizedBox(),
+                                        ),
+                                      ),
+                                    ),
+                                  )
                                 ],
                               ),
                             )
-                          : SizedBox(),
+                          : widget.jobitem?.bookingServiceItem?.canStartJob ==
+                                      true ||
+                                  widget.jobitem?.bookingServiceItem
+                                          ?.canUncommit ==
+                                      true
+                              ? Container(
+                                  margin: EdgeInsets.only(bottom: 15),
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      //unassign job
+                                      widget.jobitem?.bookingServiceItem
+                                                  ?.canUncommit ==
+                                              true
+                                          ? Expanded(
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  if (widget
+                                                          .jobitem!.serviceDate!
+                                                          .difference(
+                                                              DateTime.now())
+                                                          .inHours <=
+                                                      3)
+                                                    unassignConfirmDialog(
+                                                        'Oops!',
+                                                        'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
+                                                        context,
+                                                        false,
+                                                        widget.jobitem,
+                                                        "Unassign");
+                                                  else
+                                                    await uncommitJobMutation(
+                                                        widget
+                                                            .jobitem!
+                                                            .bookingServiceItem!
+                                                            .id);
+                                                  widget.refetchJobs!();
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 15,
+                                                      horizontal: 20),
+                                                  decoration: BoxDecoration(
+                                                    color: zimkeyOrange,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: zimkeyLightGrey
+                                                            .withOpacity(0.1),
+                                                        blurRadius:
+                                                            5.0, // soften the shadow
+                                                        spreadRadius:
+                                                            2.0, //extend the shadow
+                                                        offset: Offset(
+                                                          1.0, // Move to right 10  horizontally
+                                                          1.0, // Move to bottom 10 Vertically
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  child: Text(
+                                                    'Unassign Job',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: zimkeyWhite,
+                                                      fontFamily: 'Inter',
+                                                      // fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : SizedBox(),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      //start job
+                                      widget.jobitem?.bookingServiceItem
+                                                  ?.canStartJob ==
+                                              true
+                                          ? Expanded(
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  _workCode.clear();
+                                                  startJobDialog(
+                                                    'Verification',
+                                                    'Enter job work code for verification.',
+                                                    context,
+                                                    null,
+                                                    widget.jobitem,
+                                                  );
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 15,
+                                                      horizontal: 20),
+                                                  decoration: BoxDecoration(
+                                                    color: zimkeyOrange,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: zimkeyLightGrey
+                                                            .withOpacity(0.1),
+                                                        blurRadius:
+                                                            5.0, // soften the shadow
+                                                        spreadRadius:
+                                                            2.0, //extend the shadow
+                                                        offset: Offset(
+                                                          1.0, // Move to right 10  horizontally
+                                                          1.0, // Move to bottom 10 Vertically
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  child: Text(
+                                                    'Start Job',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: zimkeyWhite,
+                                                      fontFamily: 'Inter',
+                                                      // fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : SizedBox(),
+                                    ],
+                                  ),
+                                )
+                              : SizedBox(),
                       if (jobStatus!
-                          .toLowerCase()
-                          .contains('partner approval pending'))
+                              .toLowerCase()
+                              .contains('partner approval pending') &&
+                          !(widget.jobitem?.bookingServiceItem
+                                      ?.bookingServiceItemType?.index ==
+                                  1 &&
+                              widget.jobitem?.partnerCalendarStatus ==
+                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING))
                         Container(
                           margin: EdgeInsets.symmetric(
                               vertical: 15, horizontal: 20),
@@ -476,7 +601,12 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                       if (widget.jobitem!.bookingServiceItem != null &&
                           widget.jobitem!.bookingServiceItem!.canReschedule !=
                               null &&
-                          widget.jobitem!.bookingServiceItem!.canReschedule!)
+                          widget.jobitem!.bookingServiceItem!.canReschedule! &&
+                          !(widget.jobitem?.bookingServiceItem
+                                      ?.bookingServiceItemType?.index ==
+                                  1 &&
+                              widget.jobitem?.partnerCalendarStatus ==
+                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING))
                         Column(
                           children: [
                             //reschedule job-----------
@@ -605,49 +735,55 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
                       //finish job
                       if (taskStage == 2)
-                        InkWell(
-                          onTap: () async {
-                            finishJobDialog(
-                                'Finish Job',
-                                'Add your finishing comments.',
-                                context,
-                                null,
-                                widget.jobitem!);
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            margin: EdgeInsets.only(
-                                bottom: 15, left: 20, right: 20),
-                            alignment: Alignment.center,
-                            // width: (MediaQuery.of(context).size.width) - 240,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: zimkeyOrange,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: zimkeyLightGrey.withOpacity(0.1),
-                                  blurRadius: 5.0, // soften the shadow
-                                  spreadRadius: 2.0, //extend the shadow
-                                  offset: Offset(
-                                    1.0, // Move to right 10  horizontally
-                                    1.0, // Move to bottom 10 Vertically
+                        isLoading
+                            ? Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : InkWell(
+                                onTap: () async {
+                                  // FocusNode.
+                                  FocusScope.of(context).unfocus();
+                                  finishJobDialog(
+                                      'Finish Job',
+                                      'Add your finishing comments.',
+                                      context,
+                                      null,
+                                      widget.jobitem!);
+                                },
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: EdgeInsets.only(
+                                      bottom: 15, left: 20, right: 20),
+                                  alignment: Alignment.center,
+                                  // width: (MediaQuery.of(context).size.width) - 240,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    color: zimkeyOrange,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: zimkeyLightGrey.withOpacity(0.1),
+                                        blurRadius: 5.0, // soften the shadow
+                                        spreadRadius: 2.0, //extend the shadow
+                                        offset: Offset(
+                                          1.0, // Move to right 10  horizontally
+                                          1.0, // Move to bottom 10 Vertically
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                )
-                              ],
-                            ),
-                            child: Text(
-                              'Finish Job',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: zimkeyWhite,
-                                fontFamily: 'Inter',
-                                // fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    'Finish Job',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: zimkeyWhite,
+                                      fontFamily: 'Inter',
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       //Add Additional work------------------
                       if (widget.jobitem!.bookingServiceItem!
                                   .bookingService !=
@@ -660,7 +796,12 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                               null &&
                           widget.jobitem!.bookingServiceItem!.bookingService!
                               .service!.addons!.isNotEmpty &&
-                          jobStatus != 'CLOSED')
+                          jobStatus != 'CLOSED' &&
+                          !(widget.jobitem?.bookingServiceItem
+                                      ?.bookingServiceItemType?.index ==
+                                  1 &&
+                              widget.jobitem?.partnerCalendarStatus ==
+                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING))
                         InkWell(
                           onTap: () async {
                             Navigator.push(
@@ -1173,7 +1314,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
             ));
   }
 
-  Widget subBookingItem(BookingServiceItems subBookings) {
+  Widget subBookingItem(b.BookingServiceItems subBookings) {
     String? itemStatus;
     if (subBookings.bookingServiceItemStatus != null)
       itemStatus = subBookings.bookingServiceItemStatus.toString();
@@ -1647,7 +1788,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                           ),
                         ),
                         Text(
-                          '${DateTime.parse('${jobitem.serviceDate}').day}-${DateTime.parse('${jobitem.serviceDate}').month}-${DateTime.parse('${jobitem.serviceDate}').year}',
+                          '${DateTime.parse('${jobitem.serviceDate}').day.toString().padLeft(2, '0')}-${DateTime.parse('${jobitem.serviceDate}').month.toString().padLeft(2, '0')}-${DateTime.parse('${jobitem.serviceDate}').year}',
                           style: TextStyle(
                             color: zimkeyDarkGrey.withOpacity(1),
                             // fontWeight: FontWeight.bold,
@@ -2218,7 +2359,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                   SizedBox(
                     height: 10,
                   ),
-                  for (BookingServiceItems subBookings
+                  for (b.BookingServiceItems subBookings
                       in widget.jobitem!.bookingServiceItem!.subBookings!)
                     subBookingItem(subBookings),
                 ],
@@ -2439,6 +2580,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
   finishJobDialog(String title, String msg, BuildContext context,
       Widget? backPage, PartnerCalendarItem jobitem) {
     /////////----------
+    print("booked data${jobitem.serviceDate}");
     String hr = DateTime.parse('${jobitem.serviceDate}').hour.toString();
     if (hr.length < 2) hr = '0$hr';
     String endHr;
@@ -2448,10 +2590,9 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
     endMin = min;
     endHr = '${DateTime.parse('${jobitem.serviceDate}').hour + 1}';
     if (endHr.toString().length < 2) endHr = '0$endHr';
-    int jobdurationHrs =
-        jobitem.serviceDate!.difference(DateTime.now()).inHours.abs();
-    int jobdurationDays =
-        jobitem.serviceDate!.difference(DateTime.now()).inDays.abs();
+    var diff = jobitem.serviceDate!.difference(DateTime.now());
+    int jobdurationHrs = (diff.inHours % 24).abs();
+    int jobdurationDays = diff.inDays.abs();
     /////////----------
     showDialog(
       context: context,
@@ -2533,7 +2674,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                     height: 3,
                   ),
                   Text(
-                    '${jobitem.serviceDate!.day}-${jobitem.serviceDate!.month}-${jobitem.serviceDate!.year} | $hr:$min - $endHr:$endMin',
+                    '${jobitem.serviceDate!.day.toString().padLeft(2, '0')}-${jobitem.serviceDate!.month.toString().padLeft(2, '0')}-${jobitem.serviceDate!.year} | ${hr.padLeft(2, '0')}:${min.padLeft(2, '0')} - ${endHr.padLeft(2, '0')}:${endMin.padLeft(2, '0')}',
                     style: TextStyle(
                       color: zimkeyDarkGrey.withOpacity(1),
                       // fontWeight: FontWeight.bold,
@@ -2562,7 +2703,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                     height: 3,
                   ),
                   Text(
-                    '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year} | ${DateTime.now().hour}:${DateTime.now().minute}',
+                    '${DateTime.now().day.toString().padLeft(2, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year} | ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
                     style: TextStyle(
                       color: zimkeyDarkGrey.withOpacity(1),
                       // fontWeight: FontWeight.bold,
@@ -3050,6 +3191,172 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                   ],
                 ),
               ),
+            ));
+  }
+
+  reworkJobDialog(String title, String msg, BuildContext context,
+      Widget? backPage, PartnerCalendarItem? jobitem, bool sts) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              contentTextStyle: TextStyle(
+                color: zimkeyBlack,
+                fontWeight: FontWeight.normal,
+                fontSize: 15,
+              ),
+              titlePadding: EdgeInsets.symmetric(
+                vertical: 0,
+                horizontal: 0,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(20.0),
+                ),
+              ),
+              title: Container(
+                padding: EdgeInsets.only(left: 20, right: 20, top: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$title',
+                        style: TextStyle(
+                          color: zimkeyBlack,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Get.back();
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: zimkeyDarkGrey.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.clear,
+                          color: zimkeyDarkGrey,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              content: StatefulBuilder(builder: (context, d) {
+                return Container(
+                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+                  child: new Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        '$msg',
+                        style: TextStyle(
+                          color: zimkeyDarkGrey,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40,
+                      ),
+                      isLoading
+                          ? Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : InkWell(
+                              onTap: () async {
+                                print("resilt strt");
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                QueryResult startJobResult =
+                                    await reworkMutation(
+                                  jobitem?.bookingServiceItem?.id ?? "",
+                                  true,
+                                );
+                                print("resilt");
+                                print(startJobResult);
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Get.back();
+                                if (startJobResult.data != null) {
+                                  print('start job success!!!!!');
+                                  showCustomDialog(
+                                    'Yay!',
+                                    'Your job has ${sts ? 'Accepted' : 'Rejected'} successfully.',
+                                    context,
+                                    Dashboard(
+                                      index: 2,
+                                      tabIndex: 0,
+                                    ),
+                                  );
+                                }
+                                if (startJobResult.hasException) {
+                                  if (startJobResult
+                                      .exception!.graphqlErrors.isNotEmpty)
+                                    showCustomDialog(
+                                        'Oops',
+                                        '${startJobResult.exception!.graphqlErrors.first.message}',
+                                        context,
+                                        null);
+
+                                  if (startJobResult.exception!.linkException !=
+                                      null)
+                                    showCustomDialog(
+                                        'Oops',
+                                        '${startJobResult.exception!.linkException.toString()}',
+                                        context,
+                                        null);
+                                }
+                              },
+                              child: Center(
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  width: MediaQuery.of(context).size.width / 2,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 13, horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    color: zimkeyOrange,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: zimkeyLightGrey.withOpacity(0.1),
+                                        blurRadius: 5.0, // soften the shadow
+                                        spreadRadius: 2.0, //extend the shadow
+                                        offset: Offset(
+                                          1.0, // Move to right 10  horizontally
+                                          1.0, // Move to bottom 10 Vertically
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    'Submit',
+                                    style: TextStyle(
+                                      color: zimkeyWhite,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                    ],
+                  ),
+                );
+              }),
             ));
   }
 }

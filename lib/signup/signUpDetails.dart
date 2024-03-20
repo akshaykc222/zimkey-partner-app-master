@@ -1732,9 +1732,9 @@ class _SignUpDetailsState extends State<SignUpDetails> {
               SizedBox(
                 width: 5,
               ),
-              Focus(
-                focusNode: _areYouCompany,
-                child: Expanded(
+              Expanded(
+                child: Focus(
+                  focusNode: _areYouCompany,
                   child: RichText(
                     text: TextSpan(
                       children: <TextSpan>[
@@ -1776,82 +1776,64 @@ class _SignUpDetailsState extends State<SignUpDetails> {
                   width: 10,
                 ),
                 Expanded(
-                  child: TextFormField(
-                    focusNode: _companyNameNode,
-                    controller: _companyName,
-                    maxLength: 200,
-                    textInputAction: TextInputAction.next,
-                    keyboardType: TextInputType.text,
-                    textCapitalization: TextCapitalization.words,
-                    // onChanged: (val) {
-                    //   if (_companyName.text.isNotEmpty)
-                    //     setState(() {
-                    //       filledCompany = true;
-                    //     });
-                    //   else
-                    //     setState(() {
-                    //       filledCompany = false;
-                    //     });
-                    // },
+                  child: GestureDetector(
                     onTap: () async {
-                      List<PartnerCompany> companies = [];
-                      setState(() {
-                        isLoading = true;
-                      });
-                      var result = await getPartnerCompaniesMutation();
-                      setState(() {
-                        isLoading = false;
-                      });
-                      if (result.isNotLoading &&
-                          result.data != null &&
-                          result.data!['getPartnerCompanies'] != null) {
-                        for (Map comps in result.data!['getPartnerCompanies']) {
-                          PartnerCompany temp;
-                          temp = PartnerCompany.fromJson(
-                              comps as Map<String, dynamic>);
-                          companies.add(temp);
-                        }
-                        fbState.setCompanies(companies);
-                      } else if (result.exception != null) {
-                        print('${result.exception}');
-                      }
                       Navigator.push(
                         context,
                         PageTransition(
                           type: PageTransitionType.bottomToTop,
                           child: PartnerCompanies(
-                              companies: companies,
                               updateCompany: (PartnerCompany comp) {
-                                setState(() {
-                                  selectedCompanyID = comp.id;
-                                  _companyName.text = comp.companyName!;
-                                  filledCompany = true;
-                                });
-                              }),
+                            setState(() {
+                              selectedCompanyID = comp.id;
+                              _companyName.text = comp.companyName!;
+                              filledCompany = true;
+                            });
+                          }),
                           duration: Duration(milliseconds: 300),
                         ),
                       );
                     },
-                    onEditingComplete: () {
-                      FocusScope.of(context).requestFocus(_accNoNode);
-                    },
-                    style: TextStyle(
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 10,
+                    child: TextFormField(
+                      focusNode: _companyNameNode,
+                      controller: _companyName,
+                      maxLength: 200,
+                      enabled: false,
+                      textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.words,
+                      // onChanged: (val) {
+                      //   if (_companyName.text.isNotEmpty)
+                      //     setState(() {
+                      //       filledCompany = true;
+                      //     });
+                      //   else
+                      //     setState(() {
+                      //       filledCompany = false;
+                      //     });
+                      // },
+
+                      onEditingComplete: () {
+                        FocusScope.of(context).requestFocus(_accNoNode);
+                      },
+                      style: TextStyle(
+                        fontSize: 14,
                       ),
-                      counterText: "",
-                      hintText: 'Company Name',
-                      hintStyle: TextStyle(
-                        fontSize: 15,
-                        color: zimkeyBlack.withOpacity(0.3),
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
+                        counterText: "",
+                        hintText: 'Company Name',
+                        hintStyle: TextStyle(
+                          fontSize: 15,
+                          color: zimkeyBlack.withOpacity(0.3),
+                        ),
+                        fillColor: zimkeyOrange,
+                        focusColor: zimkeyOrange,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                       ),
-                      fillColor: zimkeyOrange,
-                      focusColor: zimkeyOrange,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
                     ),
                   ),
                 ),

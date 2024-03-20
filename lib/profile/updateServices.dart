@@ -62,6 +62,12 @@ class _UpdateServicesState extends State<UpdateServices> {
     if (partnerServices!.length == serviceMap.length) selectAll = true;
     //---------
     _searchResults = serviceMap;
+    _searchResults.sort((a, b) {
+      if (b.isSelected == true) {
+        return 1;
+      }
+      return -1;
+    });
     super.initState();
   }
 

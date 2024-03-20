@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:instant/instant.dart' as ins;
+import 'package:intl/intl.dart';
 import 'package:recase/recase.dart';
 
 import '../fbState.dart';
@@ -49,6 +50,8 @@ class _RescheduleJobpageState extends State<RescheduleJobpage> {
 
   @override
   void initState() {
+    print("start date${widget.jobitem?.bookingServiceItem?.startDateTime}");
+
     ///---------
     hr = DateTime.parse('${widget.jobitem!.serviceDate}').hour.toString();
     if (hr!.length < 2) hr = '0$hr';
@@ -280,7 +283,7 @@ class _RescheduleJobpageState extends State<RescheduleJobpage> {
         rescheduleJobResult.data!['rescheduleJob'] != null) {
       showCustomDialog(
           'Yay!',
-          'Your request for job reschedule for the service  - ${widget.jobitem!.bookingServiceItem!.bookingService!.service!.name} for the new date - ${scheduleTime!.day}-${scheduleTime.month}-${scheduleTime.year} has been submitted successfully.\nYour request will be approved by the customer shortly.',
+          'Your request for job reschedule for the service  - ${widget.jobitem!.bookingServiceItem!.bookingService!.service!.name} for the new date - ${DateFormat("dd-MM-yyyy hh:mm a")} has been submitted successfully.\nYour request will be approved by the customer shortly.',
           context,
           Dashboard(
             index: 2,
@@ -392,7 +395,7 @@ class _RescheduleJobpageState extends State<RescheduleJobpage> {
                                       Row(
                                         children: [
                                           Text(
-                                            '${DateTime.parse('${widget.jobitem!.serviceDate}').day}-${DateTime.parse('${widget.jobitem!.serviceDate}').month}-${DateTime.parse('${widget.jobitem!.serviceDate}').year}',
+                                            '${DateFormat("dd-MM-yyyy").format(widget.jobitem!.serviceDate!)}',
                                             style: TextStyle(
                                               color:
                                                   zimkeyDarkGrey.withOpacity(1),
@@ -404,7 +407,7 @@ class _RescheduleJobpageState extends State<RescheduleJobpage> {
                                             width: 2,
                                           ),
                                           Text(
-                                            '| $hr:$min - $endHr:$endMin',
+                                            '| ${widget.jobitem?.bookingServiceItem?.startDateTime != null ? DateFormat('hh:mm a').format(widget.jobitem!.bookingServiceItem!.startDateTime!) : ""} - ${widget.jobitem?.bookingServiceItem?.endDateTime != null ? DateFormat("hh:mm a").format(widget.jobitem!.bookingServiceItem!.endDateTime!) : ""}',
                                             style: TextStyle(
                                               color:
                                                   zimkeyDarkGrey.withOpacity(1),

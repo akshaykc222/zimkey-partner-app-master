@@ -55,6 +55,12 @@ class _UpdateServiceAreasState extends State<UpdateServiceAreas> {
       }
     _searchResults = areaMaps;
     if (selectedIds.length == _searchResults.length) selectAll = true;
+    _searchResults.sort((a, b) {
+      if (b.isSelected == true) {
+        return 1;
+      }
+      return -1;
+    });
     super.initState();
   }
 

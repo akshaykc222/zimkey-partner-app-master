@@ -5,12 +5,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:instant/instant.dart';
+import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:recase/recase.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
 import '../fbState.dart';
-import '../models/bookingsModel.dart';
+import '../models/bookingsModel.dart' as b;
 import '../models/jobModel.dart';
 import '../models/partnerModel.dart';
 import '../models/serviceModel.dart';
@@ -33,7 +34,8 @@ class JobsCalendar extends StatefulWidget {
   _BookingsState createState() => _BookingsState();
 }
 
-class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
+class _BookingsState extends State<JobsCalendar>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final FbState fbState = Get.put(FbState());
   // PageController controller = PageController(
   //   initialPage: 0,
@@ -103,6 +105,7 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
   // regist if the the button was tapped
   bool _buttonTap = false;
   updateTab(int pos) {
+    _currentIndex = pos;
     _controller?.animateTo(pos);
   }
 
@@ -237,6 +240,19 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
       updateTab(widget.pos!);
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationControllerOff.dispose();
+    _controller?.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -780,7 +796,7 @@ class _BookingsState extends State<JobsCalendar> with TickerProviderStateMixin {
     );
   }
 
-  Widget bookingServiceItem(BookingServices bookingServ, Bookings booking) {
+  Widget bookingServiceItem(b.BookingServices bookingServ, b.Bookings booking) {
     String? billingoption;
     List<BillingOptions> allOptions = bookingServ.service!.billingOptions!;
     for (BillingOptions op in allOptions) {
@@ -1063,7 +1079,8 @@ class BookingWidget extends StatefulWidget {
   State<BookingWidget> createState() => _BookingWidgetState();
 }
 
-class _BookingWidgetState extends State<BookingWidget> {
+class _BookingWidgetState extends State<BookingWidget>
+    with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   List<PartnerCalendarItem> items = [];
@@ -1117,6 +1134,15 @@ class _BookingWidgetState extends State<BookingWidget> {
     'Ongoing',
     'Completed'
   ];
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      refetchlist!();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -1414,7 +1440,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${DateTime.parse('${jobitem.serviceDate}').day}-${DateTime.parse('${jobitem.serviceDate}').month}-${DateTime.parse('${jobitem.serviceDate}').year}  $hr:$min - $endHr:$endMin',
+                      DateFormat('dd-MM-yyyy hh:mm a')
+                          .format(jobitem.serviceDate!),
                       style: TextStyle(
                         color: zimkeyDarkGrey.withOpacity(1.0),
                         // fontWeight: FontWeight.bold,
@@ -1507,13 +1534,26 @@ class _BookingWidgetState extends State<BookingWidget> {
                   ],
                 ),
               ),
+            jobitem.bookingServiceItem?.bookingServiceItemType?.index == 1
+                ? Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 30,
+                    color: Colors.red,
+                    child: Center(
+                      child: Text(
+                        "Rework",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                : SizedBox()
           ],
         ),
       ),
     );
   }
 
-  Widget bookingServiceItem(BookingServices bookingServ, Bookings booking) {
+  Widget bookingServiceItem(b.BookingServices bookingServ, b.Bookings booking) {
     String? billingoption;
     List<BillingOptions> allOptions = bookingServ.service!.billingOptions!;
     for (BillingOptions op in allOptions) {

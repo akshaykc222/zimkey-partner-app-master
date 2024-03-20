@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:zimkey_partner_app/notification.dart';
 
 import '../fbState.dart';
 import '../login/login.dart';
@@ -43,28 +45,81 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   BuildContext? thiscontext;
 
   navigateTo() async {
+    final RemoteMessage? _message =
+        await FirebaseMessaging.instance.getInitialMessage();
     print('inside navigate!! isLogin $isLoggedin registerd $isRegistered');
-    if (isLoggedin != null && isLoggedin!) {
-      if (isRegistered != null) {
-        if (isRegistered!) {
-          fbState.setIsRegistered('true');
-          //Register device ID----------
-          await getDeviceInfo();
-          await setupMessaging();
-          await getUser(context);
-        } else
+    if (_message != null) {
+      NotificationService.handleNavigation(_message, context, () async {
+        if (isLoggedin != null && isLoggedin!) {
+          if (isRegistered != null) {
+            if (isRegistered!) {
+              fbState.setIsRegistered('true');
+              //Register device ID----------
+              await getDeviceInfo();
+              await setupMessaging();
+              await getUser(context);
+            } else
+              Navigator.pushReplacement(
+                  context,
+                  PageTransition(
+                    type: PageTransitionType.rightToLeft,
+                    child: SignUpDetails(
+                      fbstate: fbState,
+                    ),
+                    duration: Duration(milliseconds: 400),
+                  ));
+          } else {
+            fbState.setIsRegistered('false');
+            print('isregisteres is null!!!');
+            Navigator.pushReplacement(
+                context,
+                PageTransition(
+                  type: PageTransitionType.rightToLeft,
+                  child: Login(),
+                  duration: Duration(milliseconds: 400),
+                ));
+          }
+        } else {
+          Navigator.pushReplacement(
+              context,
+              PageTransition(
+                type: PageTransitionType.rightToLeft,
+                child: Login(),
+                duration: Duration(milliseconds: 400),
+              ));
+        }
+      });
+    } else {
+      if (isLoggedin != null && isLoggedin!) {
+        if (isRegistered != null) {
+          if (isRegistered!) {
+            fbState.setIsRegistered('true');
+            //Register device ID----------
+            await getDeviceInfo();
+            await setupMessaging();
+            await getUser(context);
+          } else
+            Navigator.push(
+                context,
+                PageTransition(
+                  type: PageTransitionType.rightToLeft,
+                  child: SignUpDetails(
+                    fbstate: fbState,
+                  ),
+                  duration: Duration(milliseconds: 400),
+                ));
+        } else {
+          fbState.setIsRegistered('false');
+          print('isregisteres is null!!!');
           Navigator.push(
               context,
               PageTransition(
                 type: PageTransitionType.rightToLeft,
-                child: SignUpDetails(
-                  fbstate: fbState,
-                ),
+                child: Login(),
                 duration: Duration(milliseconds: 400),
               ));
+        }
       } else {
-        fbState.setIsRegistered('false');
-        print('isregisteres is null!!!');
         Navigator.push(
             context,
             PageTransition(
@@ -73,14 +128,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
               duration: Duration(milliseconds: 400),
             ));
       }
-    } else {
-      Navigator.push(
-          context,
-          PageTransition(
-            type: PageTransitionType.rightToLeft,
-            child: Login(),
-            duration: Duration(milliseconds: 400),
-          ));
     }
   }
 

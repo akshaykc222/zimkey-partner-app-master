@@ -41,7 +41,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
   String selectedTimeSlot = "";
   bool showMonthList = false;
   int? serviceUnit;
-  int minServiceUnit = 1;
+  int minServiceUnit = 0;
   int maxServiceUnit = 10;
   final FbState fbState = Get.find();
 
@@ -84,6 +84,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
     super.initState();
   }
 
+  bool checked = false;
   //Get  booking time slots
   Future<QueryResult> getBookingTimeSlots(String? billingOption,
       String? partnerId, bool nextday, Widget refreshPage) async {
@@ -167,7 +168,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
           ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 0)
           : new DateTime(DateTime.now().year + 1, 1, 0);
       dateMap = {
-        "start": DateTime.now(),
+        "start": DateTime.now().add(Duration(days: 1)),
         "end": lastDayDateTime,
       };
     } else {
@@ -499,14 +500,32 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                           height: 20,
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: Text(
-                            'Select any Additional Work(s)',
-                            style: TextStyle(
-                              color: zimkeyDarkGrey.withOpacity(0.7),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          padding: const EdgeInsets.only(left: 20.0, right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Select any Additional Work(s)',
+                                style: TextStyle(
+                                  color: zimkeyDarkGrey.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    checked = !checked;
+                                  });
+                                },
+                                child: SvgPicture.asset(
+                                  'assets/images/icons/newIcons/tick-circle.svg',
+                                  color: checked
+                                      ? zimkeyOrange
+                                      : zimkeyDarkGrey.withOpacity(0.5),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(
@@ -522,7 +541,8 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                               addon.type
                                   .toString()
                                   .toLowerCase()
-                                  .contains('partner'))
+                                  .contains('partner') &&
+                              checked)
                             AddonPicker(
                               addon: addon,
                               selectedAddons: selectedAddons,
@@ -587,7 +607,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                   Center(
                     child: InkWell(
                       onTap: () async {
-                        if (selectedAddons.isNotEmpty)
+                        if (selectedAddons.isNotEmpty || serviceUnit != 0)
                           await addAddWorkMutation(
                               widget.jobtem!.bookingServiceItemId);
                         else if (selectedDate == null ||
@@ -603,7 +623,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                               'You need to select the booking time',
                               context,
                               null);
-                        else if (serviceUnit == null)
+                        else if (serviceUnit == null || serviceUnit == 0)
                           showCustomDialog(
                               'Oops!',
                               'You need to select the units of selected service - ${widget.jobtem!.bookingServiceItem!.bookingService!.service!.name}',
@@ -723,7 +743,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
               children: [
                 InkWell(
                   onTap: () {
-                    if (serviceUnit! > 1)
+                    if (serviceUnit! > 0)
                       setState(() {
                         serviceUnit = serviceUnit! - 1;
                       });

@@ -24,7 +24,7 @@ class JobBoardPage extends StatefulWidget {
   _JobBoardState createState() => _JobBoardState();
 }
 
-class _JobBoardState extends State<JobBoardPage> {
+class _JobBoardState extends State<JobBoardPage> with WidgetsBindingObserver {
   final FbState fbState = Get.find();
   bool showExpansion = false;
   bool isLoading = false;
@@ -56,7 +56,16 @@ class _JobBoardState extends State<JobBoardPage> {
   ScrollController scrollController = ScrollController();
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      refetchlist!();
+    }
+  }
+
+  @override
   void initState() {
+    print("init state is calling");
     scrollController.addListener(() {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
@@ -223,11 +232,11 @@ class _JobBoardState extends State<JobBoardPage> {
                                                       jobBordList[index].id,
                                                       isLoading,
                                                       context,
-                                                      teamId);
+                                                      teamId,
+                                                      refetch!);
                                                   setState(() {
                                                     isLoading = false;
                                                   });
-                                                  refetch!();
                                                 },
                                               );
                                       },
@@ -442,7 +451,7 @@ class _JobItemWidgetNewState extends State<JobItemWidgetNew> {
                         Text(
                           widget.job?.jobDate == null
                               ? ""
-                              : DateFormat('dd / MM / y h:mm')
+                              : DateFormat('dd / MM / y h:mm a')
                                   .format(widget.job!.jobDate!),
                           style: TextStyle(
                             color: zimkeyDarkGrey,

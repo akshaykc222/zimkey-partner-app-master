@@ -75,7 +75,7 @@ showCustomDialog(
               InkWell(
                 onTap: () {
                   if (backPage != null)
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       PageTransition(
                         type: PageTransitionType.bottomToTop,
@@ -111,6 +111,7 @@ showCustomDialog(
             children: <Widget>[
               Text(
                 '$msg',
+                textAlign: TextAlign.justify,
               ),
             ],
           ),

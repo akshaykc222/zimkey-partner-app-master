@@ -315,6 +315,30 @@ class _ProfileState extends State<Profile> {
                                                 SizedBox(
                                                   height: 5,
                                                 ),
+                                                userdetails?.partnerDetails
+                                                            ?.isZimkeyPartner ==
+                                                        true
+                                                    ? Container(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 3),
+                                                        decoration: BoxDecoration(
+                                                            color: zimkeyOrange,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                        child: Text(
+                                                          "Zimky Partner",
+                                                          style: TextStyle(
+                                                              fontSize: 12),
+                                                        ),
+                                                      )
+                                                    : SizedBox(),
+                                                SizedBox(
+                                                  height: 5,
+                                                ),
                                                 Text(
                                                   userdetails?.phone ?? "",
                                                   style: TextStyle(
@@ -727,7 +751,7 @@ class _ProfileState extends State<Profile> {
 
                                           showLogoutDialog(
                                               'Confirm',
-                                              "Are you sure you want to sign out from the app?",
+                                              "Are you sure you want to signout from the app?",
                                               context,
                                               true);
                                         },

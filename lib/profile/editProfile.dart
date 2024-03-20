@@ -1300,46 +1300,18 @@ class _EditProfileState extends State<EditProfile> {
                               keyboardType: TextInputType.text,
                               textCapitalization: TextCapitalization.words,
                               onTap: () async {
-                                List<PartnerCompany> companies = [];
-                                if (areas != null && areas.isEmpty) {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-                                  var result =
-                                      await getPartnerCompaniesMutation();
-                                  if (result.isNotLoading &&
-                                      result.data != null &&
-                                      result.data!['getPartnerCompanies'] !=
-                                          null) {
-                                    for (Map comps in result
-                                        .data!['getPartnerCompanies']) {
-                                      PartnerCompany temp;
-                                      temp = PartnerCompany.fromJson(
-                                          comps as Map<String, dynamic>);
-                                      companies.add(temp);
-                                    }
-                                    fbState.setCompanies(companies);
-                                  } else if (result.exception != null) {
-                                    print('${result.exception}');
-                                  }
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                }
                                 Navigator.push(
                                   context,
                                   PageTransition(
                                     type: PageTransitionType.bottomToTop,
                                     child: PartnerCompanies(
-                                        companies: companies,
                                         updateCompany: (PartnerCompany comp) {
-                                          setState(() {
-                                            selectedCompanyID = comp.id;
-                                            _companyName.text =
-                                                comp.companyName!;
-                                            filledCompany = true;
-                                          });
-                                        }),
+                                      setState(() {
+                                        selectedCompanyID = comp.id;
+                                        _companyName.text = comp.companyName!;
+                                        filledCompany = true;
+                                      });
+                                    }),
                                     duration: Duration(milliseconds: 300),
                                   ),
                                 );

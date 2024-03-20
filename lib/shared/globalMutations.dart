@@ -27,6 +27,25 @@ String? _token;
 late var deviceMap;
 
 //Get me --------
+
+checkUser() async {
+  PartnerUser partnerUser;
+  final MutationOptions _options = MutationOptions(
+    document: gql(getMe),
+  );
+  final QueryResult loggedInUser = await globalGQLClient.value.mutate(_options);
+  if (loggedInUser.hasException) {
+    print('Getuser exception >>> ${loggedInUser.exception.toString()}');
+  }
+  if (loggedInUser != null &&
+      loggedInUser.data != null &&
+      loggedInUser.data!['me'] != null) {
+    print('logged in user ');
+    partnerUser = PartnerUser.fromJson(loggedInUser.data!['me']);
+    fbState.setPartnerUser(partnerUser);
+  }
+}
+
 Future<QueryResult> getUser(BuildContext context) async {
   PartnerUser partnerUser;
   final MutationOptions _options = MutationOptions(
@@ -59,7 +78,7 @@ Future<QueryResult> getUser(BuildContext context) async {
           switch (stage) {
             case 'UPLOAD_PROFILE_PICTURE':
               {
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     PageTransition(
                       type: PageTransitionType.rightToLeft,
@@ -70,7 +89,7 @@ Future<QueryResult> getUser(BuildContext context) async {
               }
             case 'SELECT_SERVICE':
               {
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     PageTransition(
                       type: PageTransitionType.rightToLeft,
@@ -82,7 +101,7 @@ Future<QueryResult> getUser(BuildContext context) async {
             case 'SELECT_AREA':
               {
                 await getAreasQuery();
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     PageTransition(
                       type: PageTransitionType.rightToLeft,
@@ -95,7 +114,7 @@ Future<QueryResult> getUser(BuildContext context) async {
               }
             case 'UPLOAD_DOCUMENT':
               {
-                Navigator.push(
+                Navigator.pushReplacement(
                     context,
                     PageTransition(
                       type: PageTransitionType.rightToLeft,
@@ -107,7 +126,7 @@ Future<QueryResult> getUser(BuildContext context) async {
           }
         } else
           //no pending tasks---------
-          Navigator.push(
+          Navigator.pushReplacement(
               context,
               PageTransition(
                 type: PageTransitionType.rightToLeft,
@@ -506,8 +525,33 @@ Future<QueryResult> startJobMutation(
   return startJobResult;
 }
 
+Future<QueryResult> reworkMutation(
+    String? bookingServiceItemId, bool sts) async {
+  print("on rework");
+  final MutationOptions _options = MutationOptions(
+    document: gql(rework),
+    variables: <String, dynamic>{
+      "bookingServiceItemId": bookingServiceItemId,
+      "status": sts
+    },
+  );
+  print(_options);
+  final QueryResult startJobResult =
+      await globalGQLClient.value.mutate(_options);
+  print("result" + startJobResult.toString());
+  if (startJobResult.hasException) {
+    print(
+        'Mutation failed with exception: ${startJobResult.exception.toString()}');
+  }
+
+  if (startJobResult.data != null) {
+    print('Mutation result: ${startJobResult.data}');
+  }
+  return startJobResult;
+}
+
 Future<QueryResult> assignJobMutation(String? jobBoardId, bool? isLoading,
-    BuildContext context, List<String>? teamId) async {
+    BuildContext context, List<String>? teamId, Function refetch) async {
   final MutationOptions _options = MutationOptions(
     document: gql(commitJob),
     variables: <String, dynamic>{"jobBoardId": jobBoardId, "teamId": teamId},
@@ -528,7 +572,7 @@ Future<QueryResult> assignJobMutation(String? jobBoardId, bool? isLoading,
       assignJobMutationResult.data != null &&
       assignJobMutationResult.data!['commitJob'] != null) {
     print('success update addre!!!!!');
-
+    refetch();
     showCustomDialog(
         'Yay!',
         'Job has been successfully assigned.',

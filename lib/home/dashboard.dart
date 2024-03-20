@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,7 @@ import '../fbState.dart';
 import '../jobBoard/jobBoard.dart';
 import '../models/partnerModel.dart';
 import '../models/serviceModel.dart';
+import '../notification.dart';
 import '../profile/profile.dart';
 import '../shared/globalMutations.dart';
 import '../shared/globals.dart';
@@ -52,11 +54,15 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     _currentIndex = widget.index ?? 0;
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      NotificationService.handleNavigation(event, context, () {});
+    });
+
     super.initState();
   }
 
   final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-    primary: zimkeyOrange,
+    foregroundColor: zimkeyOrange,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10.0)),
     ),
@@ -69,8 +75,7 @@ class _DashboardState extends State<Dashboard> {
       child: Scaffold(
         body: Query(
             options: QueryOptions(
-              document: gql(getMe),
-            ),
+                document: gql(getMe), fetchPolicy: FetchPolicy.noCache),
             builder: (
               QueryResult result, {
               VoidCallback? refetch,
@@ -113,7 +118,10 @@ class _DashboardState extends State<Dashboard> {
               } else if (result.hasException) {
                 print(result.exception);
               }
-              if (isPartnerAuthorized != null && isPartnerAuthorized)
+              print(
+                  'item data : ${userDetails?.partnerDetails?.disableAccount == false} autherized ${isPartnerAuthorized}');
+              if (isPartnerAuthorized &&
+                  (userDetails?.partnerDetails?.disableAccount == false))
                 return IndexedStack(
                   sizing: StackFit.expand,
                   index: _currentIndex,
@@ -131,6 +139,8 @@ class _DashboardState extends State<Dashboard> {
                     Profile(),
                   ],
                 );
+              else if (userDetails?.partnerDetails?.disableAccount == true)
+                return disableAccount();
               else
                 return pendingStatusWidegt();
             }),
@@ -171,6 +181,83 @@ class _DashboardState extends State<Dashboard> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Text(
                 'You have not yet been approved.\n Kindly wait for your confirmation by the Zimkey team.',
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            if (fbState.isLoggedIn.value == "true" ||
+                fbState.isLoggedIn.isEmpty)
+              GestureDetector(
+                onTap: () async {
+                  setState(() {
+                    loading = true;
+                  });
+                  fbState.setUserLoggedIn('false');
+                  fbState.setToken('');
+                  await auth.signOut().then((value) {
+                    setState(() {
+                      loading = false;
+                    });
+                  });
+                  //unregister devide ID
+                  if (fbState.deviceId != null &&
+                      fbState.deviceId.value != null) {
+                    await unsetFCMToken(context, fbState.deviceId.value);
+                  }
+                  print('Logged out!!!!!!');
+                  Get.toNamed('/login');
+                },
+                child: Text(
+                  'Signout',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: zimkeyOrange,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget disableAccount() {
+    return Center(
+      child: Container(
+        // margin: EdgeInsets.symmetric(horizontal: 20),
+        height: MediaQuery.of(context).size.height / 1,
+        alignment: Alignment.center,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: zimkeyBodyOrange.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset('assets/images/icons/newIcons/information.svg'),
+            SizedBox(
+              height: 20,
+            ),
+            Text(
+              'Account has been disabled by the zimkey team!',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                'Your account has been disabled by the zimkey team.if any queries please contact us',
                 style: TextStyle(
                   fontSize: 14,
                 ),

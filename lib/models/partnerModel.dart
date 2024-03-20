@@ -86,32 +86,37 @@ class PartnerDetails {
   double? walletBalance;
   List<PartnerCompany>? company;
   bool? isAvailable;
+  bool? isZimkeyPartner;
+  bool? disableAccount;
   DateTime? unavailableTill;
   Media? photo;
   List<PartnerWalletLog>? walletLogs;
 
-  PartnerDetails({
-    this.id,
-    this.aadharNumber,
-    this.accountNumber,
-    this.address,
-    this.approved,
-    this.serviceAreaSelected,
-    this.ifsc,
-    this.categorySelected,
-    this.documentsUploaded,
-    this.serviceAreas,
-    this.services,
-    this.pendingTasks,
-    this.walletBalance,
-    this.company,
-    this.isAvailable,
-    this.unavailableTill,
-    this.photo,
-    this.walletLogs,
-  });
+  PartnerDetails(
+      {this.id,
+      this.aadharNumber,
+      this.accountNumber,
+      this.address,
+      this.approved,
+      this.serviceAreaSelected,
+      this.ifsc,
+      this.categorySelected,
+      this.documentsUploaded,
+      this.serviceAreas,
+      this.services,
+      this.pendingTasks,
+      this.walletBalance,
+      this.company,
+      this.isAvailable,
+      this.unavailableTill,
+      this.photo,
+      this.walletLogs,
+      this.isZimkeyPartner,
+      this.disableAccount});
 
   PartnerDetails.fromJson(Map<String, dynamic> json) {
+    isZimkeyPartner = json['isZimkeyPartner'];
+    disableAccount = json['disableAccount'];
     id = json['id'];
     aadharNumber = json['aadharNumber'].toString();
     accountNumber = json['accountNumber'];

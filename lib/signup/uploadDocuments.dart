@@ -369,125 +369,145 @@ class _UploadDocumentsState extends State<UploadDocuments> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            // leading: IconButton(
-            //   icon: Icon(
-            //     Icons.arrow_back_ios_rounded,
-            //     size: 18,
-            //     color: zimkeyDarkGrey,
-            //   ),
-            //   onPressed: () {
-            //     Navigator.pop(context);
-            //   },
-            // ),
-            backgroundColor: zimkeyWhite,
-            elevation: 0,
-          ),
-          bottomNavigationBar: SizedBox(
-            height: 55,
-            child: GestureDetector(
-              onTap: () async {
-                mediaIds.clear();
-                for (DocOptions options in docOptions) {
-                  if (options.isUploaded != null && options.isUploaded!)
-                    for (String? ids in options.mediaId!) {
-                      mediaIds.add(ids);
-                    }
-                }
-                if (mediaIds != null && mediaIds.isNotEmpty) {
-                  for (DocOptions op in docOptions) {
-                    if (op.doctype!.toLowerCase() == 'aadhar' &&
-                        op.isUploaded == true)
-                      setState(() {
-                        aadharUplaoded = true;
-                      });
+    return PopScope(
+      canPop: false,
+      child: Stack(
+        children: [
+          Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              // leading: IconButton(
+              //   icon: Icon(
+              //     Icons.arrow_back_ios_rounded,
+              //     size: 18,
+              //     color: zimkeyDarkGrey,
+              //   ),
+              //   onPressed: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              backgroundColor: zimkeyWhite,
+              elevation: 0,
+            ),
+            bottomNavigationBar: SizedBox(
+              height: 55,
+              child: GestureDetector(
+                onTap: () async {
+                  mediaIds.clear();
+                  for (DocOptions options in docOptions) {
+                    if (options.isUploaded != null && options.isUploaded!)
+                      for (String? ids in options.mediaId!) {
+                        mediaIds.add(ids);
+                      }
                   }
-                  // if (!aadharUplaoded)
-                  //   showCustomDialog('Oops!',
-                  //       'Aadhar card copy must be uploaded.', context, null);
-                  // else {
-                  PartnerUser partnerUser;
-                  List<PartnerPendingTaskEnum?>? partnerProgressStage = [];
-                  var userResult = await getUserOnly();
-                  if (userResult != null &&
-                      userResult.data != null &&
-                      userResult.data!['me'] != null) {
-                    print('logged in user ');
-                    partnerUser = PartnerUser.fromJson(userResult.data!['me']);
-                    fbState.setPartnerUser(partnerUser);
-                    fbState.setIsRegistered(
-                        partnerUser.isPartnerRegistered.toString());
-                    if (partnerUser != null &&
-                        partnerUser.isPartnerRegistered!) {
-                      if (partnerUser.userType!.toLowerCase() != "customer" &&
-                          partnerUser.partnerDetails != null) {
-                        //Check Partner progress
-                        partnerProgressStage.clear();
-                        if (partnerUser.partnerDetails != null &&
-                            partnerUser.partnerDetails!.pendingTasks != null &&
-                            partnerUser
-                                .partnerDetails!.pendingTasks!.isNotEmpty) {
-                          partnerProgressStage =
-                              partnerUser.partnerDetails!.pendingTasks;
-                          fbState.setPartnerProgress(partnerProgressStage!);
-                          String stage = partnerProgressStage[0].toString();
-                          if (stage.contains('.')) stage = stage.split('.')[1];
-                          switch (stage) {
-                            case 'UPLOAD_PROFILE_PICTURE':
-                              {
-                                Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: UploadProfilePic(),
-                                      duration: Duration(milliseconds: 400),
-                                    ));
-                                break;
-                              }
-                            case 'UPLOAD_DOCUMENT':
-                              {
-                                Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: UploadDocuments(),
-                                      duration: Duration(milliseconds: 400),
-                                    ));
-                                break;
-                              }
-                            case 'SELECT_SERVICE':
-                              {
-                                Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: SetUpServiceList(),
-                                      duration: Duration(milliseconds: 400),
-                                    ));
-                                break;
-                              }
-                            case 'SELECT_AREA':
-                              {
-                                await getAreasQuery();
-                                Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: SelectSearcableAreas(
-                                        fbState: fbState,
-                                      ),
-                                      duration: Duration(milliseconds: 400),
-                                    ));
-                                break;
-                              }
+                  if (mediaIds != null && mediaIds.isNotEmpty) {
+                    for (DocOptions op in docOptions) {
+                      if (op.doctype!.toLowerCase() == 'aadhar' &&
+                          op.isUploaded == true)
+                        setState(() {
+                          aadharUplaoded = true;
+                        });
+                    }
+                    // if (!aadharUplaoded)
+                    //   showCustomDialog('Oops!',
+                    //       'Aadhar card copy must be uploaded.', context, null);
+                    // else {
+                    PartnerUser partnerUser;
+                    List<PartnerPendingTaskEnum?>? partnerProgressStage = [];
+                    var userResult = await getUserOnly();
+                    if (userResult != null &&
+                        userResult.data != null &&
+                        userResult.data!['me'] != null) {
+                      print('logged in user ');
+                      partnerUser =
+                          PartnerUser.fromJson(userResult.data!['me']);
+                      fbState.setPartnerUser(partnerUser);
+                      fbState.setIsRegistered(
+                          partnerUser.isPartnerRegistered.toString());
+                      if (partnerUser != null &&
+                          partnerUser.isPartnerRegistered!) {
+                        if (partnerUser.userType!.toLowerCase() != "customer" &&
+                            partnerUser.partnerDetails != null) {
+                          //Check Partner progress
+                          partnerProgressStage.clear();
+                          if (partnerUser.partnerDetails != null &&
+                              partnerUser.partnerDetails!.pendingTasks !=
+                                  null &&
+                              partnerUser
+                                  .partnerDetails!.pendingTasks!.isNotEmpty) {
+                            print("somtthing related");
+                            partnerProgressStage =
+                                partnerUser.partnerDetails!.pendingTasks;
+                            fbState.setPartnerProgress(partnerProgressStage!);
+                            String stage = partnerProgressStage[0].toString();
+                            print(stage);
+                            if (stage.contains('.'))
+                              stage = stage.split('.')[1];
+                            switch (stage) {
+                              case 'UPLOAD_PROFILE_PICTURE':
+                                {
+                                  Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: UploadProfilePic(),
+                                        duration: Duration(milliseconds: 400),
+                                      ));
+                                  break;
+                                }
+                              case 'UPLOAD_DOCUMENT':
+                                {
+                                  Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: UploadDocuments(),
+                                        duration: Duration(milliseconds: 400),
+                                      ));
+                                  break;
+                                }
+                              case 'SELECT_SERVICE':
+                                {
+                                  Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: SetUpServiceList(),
+                                        duration: Duration(milliseconds: 400),
+                                      ));
+                                  break;
+                                }
+                              case 'SELECT_AREA':
+                                {
+                                  await getAreasQuery();
+                                  Navigator.push(
+                                      context,
+                                      PageTransition(
+                                        type: PageTransitionType.rightToLeft,
+                                        child: SelectSearcableAreas(
+                                          fbState: fbState,
+                                        ),
+                                        duration: Duration(milliseconds: 400),
+                                      ));
+                                  break;
+                                }
+                            }
+                          } else {
+                            print("else wokring");
+                            sugnupConfirmationDialog('Thank You!',
+                                'We have recievd your registration request. You will be contacted shortly.');
                           }
-                        } else
-                          sugnupConfirmationDialog('Thank You!',
-                              'We have recievd your registration request. You will be contacted shortly.');
+                        } else {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: SignUpDetails(
+                                  fbstate: fbState,
+                                ),
+                                duration: Duration(milliseconds: 400),
+                              ));
+                        }
                       } else {
                         Navigator.push(
                             context,
@@ -499,375 +519,271 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                               duration: Duration(milliseconds: 400),
                             ));
                       }
-                    } else {
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                            type: PageTransitionType.rightToLeft,
-                            child: SignUpDetails(
-                              fbstate: fbState,
-                            ),
-                            duration: Duration(milliseconds: 400),
-                          ));
                     }
+                    // }
+                  } else {
+                    showCustomDialog(
+                        'Oops!',
+                        "Kindly upload atleast one document for verification.",
+                        context,
+                        null);
                   }
-                  // }
-                } else {
-                  showCustomDialog(
-                      'Oops!',
-                      "Kindly upload atleast one document for verification.",
-                      context,
-                      null);
-                }
-              },
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 50),
-                alignment: Alignment.center,
-                width: MediaQuery.of(context).size.width - 190,
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: zimkeyOrange,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: zimkeyLightGrey.withOpacity(0.1),
-                      blurRadius: 5.0, // soften the shadow
-                      spreadRadius: 2.0, //extend the shadow
-                      offset: Offset(
-                        1.0, // Move to right 10  horizontally
-                        1.0, // Move to bottom 10 Vertically
-                      ),
-                    )
-                  ],
-                ),
-                child: Text(
-                  'Submit',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontFamily: 'Inter',
-                    // fontWeight: FontWeight.bold,
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 50),
+                  alignment: Alignment.center,
+                  width: MediaQuery.of(context).size.width - 190,
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: zimkeyOrange,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: zimkeyLightGrey.withOpacity(0.1),
+                        blurRadius: 5.0, // soften the shadow
+                        spreadRadius: 2.0, //extend the shadow
+                        offset: Offset(
+                          1.0, // Move to right 10  horizontally
+                          1.0, // Move to bottom 10 Vertically
+                        ),
+                      )
+                    ],
+                  ),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontFamily: 'Inter',
+                      // fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          body: Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height,
-            color: zimkeyWhite,
-            padding: EdgeInsets.only(left: 15, right: 15, bottom: 0, top: 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Upload Documents',
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: zimkeyBlack,
-                            fontWeight: FontWeight.bold,
+            body: Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height,
+              color: zimkeyWhite,
+              padding: EdgeInsets.only(left: 15, right: 15, bottom: 0, top: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Upload Documents',
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: zimkeyBlack,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 3,
-                        ),
-                        Text(
-                          'Please upload documents',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: zimkeyDarkGrey.withOpacity(0.6),
+                          SizedBox(
+                            height: 3,
                           ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          //unregister devide ID
-                          if (fbState.deviceId != null &&
-                              fbState.deviceId.value != null) {
-                            await unsetFCMToken(
-                                context, fbState.deviceId.value);
-                          }
-                          fbState.setUserLoggedIn('false');
-                          fbState.setToken('');
-                          await auth.signOut().then((value) {
+                          Text(
+                            'Please upload documents',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: zimkeyDarkGrey.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
                             setState(() {
-                              isLoading = false;
+                              isLoading = true;
                             });
-                          });
-                          print('Logged out!!!!!!');
-                          Get.toNamed('/login');
-                        },
-                        child: Container(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (fbState != null &&
-                                  fbState.partnerUser != null &&
-                                  fbState.partnerUser.value != null &&
-                                  fbState.partnerUser.value!.phone != null &&
-                                  fbState.partnerUser.value!.phone!.isNotEmpty)
+                            //unregister devide ID
+                            if (fbState.deviceId != null &&
+                                fbState.deviceId.value != null) {
+                              await unsetFCMToken(
+                                  context, fbState.deviceId.value);
+                            }
+                            fbState.setUserLoggedIn('false');
+                            fbState.setToken('');
+                            await auth.signOut().then((value) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            });
+                            print('Logged out!!!!!!');
+                            Get.toNamed('/login');
+                          },
+                          child: Container(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (fbState != null &&
+                                    fbState.partnerUser != null &&
+                                    fbState.partnerUser.value != null &&
+                                    fbState.partnerUser.value!.phone != null &&
+                                    fbState
+                                        .partnerUser.value!.phone!.isNotEmpty)
+                                  Text(
+                                    'Not ${fbState.partnerUser.value!.phone} ?',
+                                    style: TextStyle(
+                                      color: zimkeyOrange,
+                                      fontSize: 10,
+                                      // fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 Text(
-                                  'Not ${fbState.partnerUser.value!.phone} ?',
+                                  'Back To Login',
                                   style: TextStyle(
                                     color: zimkeyOrange,
                                     fontSize: 10,
                                     // fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              Text(
-                                'Back To Login',
-                                style: TextStyle(
-                                  color: zimkeyOrange,
-                                  fontSize: 10,
-                                  // fontWeight: FontWeight.bold,
-                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    // color: zimkeyGreen,
+                    height: MediaQuery.of(context).size.height / 1.4,
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 15,
+                        ),
+                        if (selectedDocType != null)
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedDocType = null;
+                                backphotoId = null;
+                                frontphotoId = null;
+                                // _image = null;
+                              });
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                color: zimkeyWhite,
+                                borderRadius: BorderRadius.circular(25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: zimkeyLightGrey.withOpacity(0.1),
+                                    blurRadius: 2.0, // soften the shadow
+                                    spreadRadius: 2.0, //extend the shadow
+                                    offset: Offset(
+                                      1.0, // Move to right 10  horizontally
+                                      1.0, // Move to bottom 10 Vertically
+                                    ),
+                                  )
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  // color: zimkeyGreen,
-                  height: MediaQuery.of(context).size.height / 1.4,
-                  child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 15,
-                      ),
-                      if (selectedDocType != null)
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              selectedDocType = null;
-                              backphotoId = null;
-                              frontphotoId = null;
-                              // _image = null;
-                            });
-                          },
-                          child: Container(
-                            alignment: Alignment.center,
-                            width: 100,
-                            decoration: BoxDecoration(
-                              color: zimkeyWhite,
-                              borderRadius: BorderRadius.circular(25),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: zimkeyLightGrey.withOpacity(0.1),
-                                  blurRadius: 2.0, // soften the shadow
-                                  spreadRadius: 2.0, //extend the shadow
-                                  offset: Offset(
-                                    1.0, // Move to right 10  horizontally
-                                    1.0, // Move to bottom 10 Vertically
-                                  ),
-                                )
-                              ],
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 13, vertical: 7),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.chevron_left_outlined,
-                                  color: zimkeyOrange,
-                                ),
-                                Text(
-                                  'Back',
-                                  style: TextStyle(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 13, vertical: 7),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.chevron_left_outlined,
                                     color: zimkeyOrange,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      if (selectedDocType == null)
-                        Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 5,
-                            runSpacing: 5,
-                            children: [
-                              for (DocOptions options in docOptions)
-                                if (options.isTile != null && options.isTile!)
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedDocType = options;
-                                      });
-                                    },
-                                    child: Container(
-                                      height: 110,
-                                      child: Stack(
-                                        children: [
-                                          Container(
-                                            constraints: BoxConstraints(
-                                                maxWidth: MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    4.5,
-                                                minWidth: 60,
-                                                maxHeight: 120,
-                                                minHeight: 80),
-                                            width: 92,
-                                            height: 92,
-                                            decoration: BoxDecoration(
-                                              color: zimkeyBodyOrange,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              border: Border.all(
-                                                color: options.isUploaded!
-                                                    ? zimkeyOrange
-                                                    : zimkeyBodyOrange,
-                                              ),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 0),
-                                            margin: EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 5),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                // Icon(Icons.document_scanner),
-                                                SvgPicture.asset(options.icon!),
-                                                SizedBox(
-                                                  height: 3,
-                                                ),
-                                                Text(
-                                                  options.doctype!,
-                                                  style: TextStyle(
-                                                    color: zimkeyDarkGrey,
-                                                    fontSize: 11,
-                                                  ),
-                                                  textAlign: TextAlign.center,
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          if (options.isUploaded!)
-                                            Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              child: Container(
-                                                padding: EdgeInsets.all(2),
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: zimkeyOrange,
-                                                ),
-                                                child: Icon(
-                                                  Icons.check,
-                                                  color: zimkeyWhite,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
+                                  Text(
+                                    'Back',
+                                    style: TextStyle(
+                                      color: zimkeyOrange,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                            ],
+                                ],
+                              ),
+                            ),
                           ),
+                        SizedBox(
+                          height: 15,
                         ),
-                      if (selectedDocType != null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                getImage(selectedDocType, 'front');
-                              },
-                              child: uploadTile('front', selectedDocType),
-                            ),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                getImage(selectedDocType, 'back');
-                              },
-                              child: uploadTile('back', selectedDocType),
-                            ),
-                          ],
-                        ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      if (selectedDocType == null)
-                        Column(
-                          children: [
-                            for (DocOptions options in docOptions)
-                              if (options.isTile != null && !options.isTile!)
-                                Container(
-                                  margin: EdgeInsets.only(bottom: 15),
-                                  padding: EdgeInsets.only(
-                                      bottom: 10, top: 10, left: 5, right: 5),
-                                  decoration: BoxDecoration(
-                                      color: zimkeyLightGrey,
-                                      borderRadius: BorderRadius.circular(5)
-                                      // border: Border(
-                                      //   bottom: BorderSide(
-                                      //     color: zimkeyDarkGrey.withOpacity(0.2),
-                                      //   ),
-                                      // ),
-                                      ),
-                                  child: InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        options.isUploaded = false;
-                                      });
-                                      getImage(options, null);
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            options.doctype!,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: zimkeyDarkGrey,
+                        if (selectedDocType == null)
+                          Center(
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 5,
+                              runSpacing: 5,
+                              children: [
+                                for (DocOptions options in docOptions)
+                                  if (options.isTile != null && options.isTile!)
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          selectedDocType = options;
+                                        });
+                                      },
+                                      child: Container(
+                                        height: 110,
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              constraints: BoxConstraints(
+                                                  maxWidth:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          4.5,
+                                                  minWidth: 60,
+                                                  maxHeight: 120,
+                                                  minHeight: 80),
+                                              width: 92,
+                                              height: 92,
+                                              decoration: BoxDecoration(
+                                                color: zimkeyBodyOrange,
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                border: Border.all(
+                                                  color: options.isUploaded!
+                                                      ? zimkeyOrange
+                                                      : zimkeyBodyOrange,
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 0),
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 5),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  // Icon(Icons.document_scanner),
+                                                  SvgPicture.asset(
+                                                      options.icon!),
+                                                  SizedBox(
+                                                    height: 3,
+                                                  ),
+                                                  Text(
+                                                    options.doctype!,
+                                                    style: TextStyle(
+                                                      color: zimkeyDarkGrey,
+                                                      fontSize: 11,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                        _image != null && options.isUploaded!
-                                            ? InkWell(
-                                                onTap: () {
-                                                  for (DocOptions op
-                                                      in docOptions) {
-                                                    if (op.code ==
-                                                        options.code) {
-                                                      setState(() {
-                                                        op.isUploaded = false;
-                                                        op.mediaId!.clear();
-                                                      });
-                                                    }
-                                                  }
-                                                },
+                                            if (options.isUploaded!)
+                                              Positioned(
+                                                top: 0,
+                                                right: 0,
                                                 child: Container(
                                                   padding: EdgeInsets.all(2),
                                                   decoration: BoxDecoration(
@@ -875,39 +791,136 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                                                     color: zimkeyOrange,
                                                   ),
                                                   child: Icon(
-                                                    Icons.clear,
+                                                    Icons.check,
                                                     color: zimkeyWhite,
-                                                    size: 14,
+                                                    size: 16,
                                                   ),
                                                 ),
-                                              )
-                                            : Icon(
-                                                Icons.add,
-                                                size: 18,
-                                                color: zimkeyOrange,
                                               ),
-                                      ],
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                              ],
+                            ),
+                          ),
+                        if (selectedDocType != null)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  getImage(selectedDocType, 'front');
+                                },
+                                child: uploadTile('front', selectedDocType),
+                              ),
+                              SizedBox(
+                                width: 20,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  getImage(selectedDocType, 'back');
+                                },
+                                child: uploadTile('back', selectedDocType),
+                              ),
+                            ],
+                          ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        if (selectedDocType == null)
+                          Column(
+                            children: [
+                              for (DocOptions options in docOptions)
+                                if (options.isTile != null && !options.isTile!)
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 15),
+                                    padding: EdgeInsets.only(
+                                        bottom: 10, top: 10, left: 5, right: 5),
+                                    decoration: BoxDecoration(
+                                        color: zimkeyLightGrey,
+                                        borderRadius: BorderRadius.circular(5)
+                                        // border: Border(
+                                        //   bottom: BorderSide(
+                                        //     color: zimkeyDarkGrey.withOpacity(0.2),
+                                        //   ),
+                                        // ),
+                                        ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          options.isUploaded = false;
+                                        });
+                                        getImage(options, null);
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              options.doctype!,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: zimkeyDarkGrey,
+                                              ),
+                                            ),
+                                          ),
+                                          _image != null && options.isUploaded!
+                                              ? InkWell(
+                                                  onTap: () {
+                                                    for (DocOptions op
+                                                        in docOptions) {
+                                                      if (op.code ==
+                                                          options.code) {
+                                                        setState(() {
+                                                          op.isUploaded = false;
+                                                          op.mediaId!.clear();
+                                                        });
+                                                      }
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(2),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: zimkeyOrange,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.clear,
+                                                      color: zimkeyWhite,
+                                                      size: 14,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  Icons.add,
+                                                  size: 18,
+                                                  color: zimkeyOrange,
+                                                ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                          ],
-                        ),
-                    ],
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // SizedBox(
-                //   height: 5,
-                // ),
-              ],
+                  // SizedBox(
+                  //   height: 5,
+                  // ),
+                ],
+              ),
             ),
           ),
-        ),
-        if (isLoading)
-          Center(
-            child: sharedLoadingIndicator(),
-          ),
-      ],
+          if (isLoading)
+            Center(
+              child: sharedLoadingIndicator(),
+            ),
+        ],
+      ),
     );
   }
 
@@ -1045,118 +1058,105 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   }
 
   sugnupConfirmationDialog(String title, String msg) {
-    showGeneralDialog(
-        barrierColor: Colors.black.withOpacity(0.5),
-        transitionBuilder: (context, a1, a2, widget) {
-          return Transform.scale(
-            scale: a1.value,
-            child: Opacity(
-              opacity: a1.value,
-              child: AlertDialog(
-                contentTextStyle: TextStyle(
-                  color: zimkeyBlack,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 15,
-                ),
-                titlePadding: EdgeInsets.symmetric(
-                  vertical: 0,
-                  horizontal: 0,
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: 15,
-                  horizontal: 0,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(20.0),
+    showDialog(
+      builder: (context) => AlertDialog(
+        contentTextStyle: TextStyle(
+          color: zimkeyBlack,
+          fontWeight: FontWeight.normal,
+          fontSize: 15,
+        ),
+        titlePadding: EdgeInsets.symmetric(
+          vertical: 0,
+          horizontal: 0,
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: 15,
+          horizontal: 0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(20.0),
+          ),
+        ),
+        title: Container(
+          padding: EdgeInsets.only(left: 20, top: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  '$title',
+                  style: TextStyle(
+                    color: zimkeyBlack,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
-                title: Container(
-                  padding: EdgeInsets.only(left: 20, top: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '$title',
-                          style: TextStyle(
-                            color: zimkeyBlack,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
+              ),
+            ],
+          ),
+        ),
+        content: Container(
+          padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+          child: new Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                '$msg',
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Center(
+            child: new InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    PageTransition(
+                      type: PageTransitionType.rightToLeft,
+                      child: Dashboard(),
+                      duration: Duration(milliseconds: 400),
+                    ));
+              },
+              child: Container(
+                margin: EdgeInsets.only(bottom: 20),
+                alignment: Alignment.center,
+                width: MediaQuery.of(context).size.width / 3,
+                padding: EdgeInsets.symmetric(
+                  vertical: 13,
+                ),
+                decoration: BoxDecoration(
+                  color: zimkeyOrange,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: zimkeyLightGrey.withOpacity(0.1),
+                      blurRadius: 5.0, // soften the shadow
+                      spreadRadius: 1.0, //extend the shadow
+                      offset: Offset(
+                        2.0, // Move to right 10  horizontally
+                        1.0, // Move to bottom 10 Vertically
                       ),
-                    ],
+                    )
+                  ],
+                ),
+                child: Text(
+                  'Proceed',
+                  style: TextStyle(
+                    color: zimkeyWhite,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
                 ),
-                content: Container(
-                  padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
-                  child: new Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        '$msg',
-                      ),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  Center(
-                    child: new InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            PageTransition(
-                              type: PageTransitionType.rightToLeft,
-                              child: Dashboard(),
-                              duration: Duration(milliseconds: 400),
-                            ));
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 20),
-                        alignment: Alignment.center,
-                        width: MediaQuery.of(context).size.width / 3,
-                        padding: EdgeInsets.symmetric(
-                          vertical: 13,
-                        ),
-                        decoration: BoxDecoration(
-                          color: zimkeyOrange,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: zimkeyLightGrey.withOpacity(0.1),
-                              blurRadius: 5.0, // soften the shadow
-                              spreadRadius: 1.0, //extend the shadow
-                              offset: Offset(
-                                2.0, // Move to right 10  horizontally
-                                1.0, // Move to bottom 10 Vertically
-                              ),
-                            )
-                          ],
-                        ),
-                        child: Text(
-                          'Proceed',
-                          style: TextStyle(
-                            color: zimkeyWhite,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
-          );
-        },
-        transitionDuration: Duration(milliseconds: 250),
-        barrierDismissible: true,
-        barrierLabel: '',
-        context: context,
-        pageBuilder: (context, animation1, animation2) {} as Widget Function(
-            BuildContext, Animation<double>, Animation<double>));
+          ),
+        ],
+      ),
+      context: context,
+    );
   }
 }
 

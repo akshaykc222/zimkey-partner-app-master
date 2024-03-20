@@ -235,7 +235,14 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
       if (addAddlWorkResult.data!['verifyOtp']['data']['isPartnerRegistered']) {
         await getUser(context);
       } else {
+        setState(() {
+          isLoading = true;
+        });
         print("else");
+        await checkUser();
+        setState(() {
+          isLoading = false;
+        });
         Navigator.push(
             context,
             PageTransition(
