@@ -254,6 +254,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
     setState(() {
       isLoading = false;
     });
+    print(addAddlWorkResult);
     if (addAddlWorkResult.hasException) {
       if (addAddlWorkResult.exception!.linkException != null)
         showCustomDialog(
@@ -610,19 +611,6 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                         if (selectedAddons.isNotEmpty || serviceUnit != 0)
                           await addAddWorkMutation(
                               widget.jobtem!.bookingServiceItemId);
-                        else if (selectedDate == null ||
-                            fullBookingDate == null)
-                          showCustomDialog(
-                              'Oops!',
-                              'You need to select the booking date',
-                              context,
-                              null);
-                        else if (selectedTimeSlot.isEmpty)
-                          showCustomDialog(
-                              'Oops!',
-                              'You need to select the booking time',
-                              context,
-                              null);
                         else if (serviceUnit == null || serviceUnit == 0)
                           showCustomDialog(
                               'Oops!',

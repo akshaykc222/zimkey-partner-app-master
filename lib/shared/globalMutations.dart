@@ -334,15 +334,15 @@ setupMessaging() async {
   print('User granted permission: ${settings.authorizationStatus}');
 }
 
-Future<QueryResult> approvePendingJob(String? bookingServiceItemId) async {
+Future<QueryResult> approvePendingJob(
+    String? bookingServiceItemId, bool sts) async {
   final MutationOptions _options = MutationOptions(
     document: gql(approveJob),
-    variables: {
-      "bookingServiceItemId": bookingServiceItemId,
-    },
+    variables: {"bookingServiceItemId": bookingServiceItemId, "status": sts},
   );
   final QueryResult apprveJobResult =
       await globalGQLClient.value.mutate(_options);
+  print(apprveJobResult);
   if (apprveJobResult.hasException) {
     print('Approve Job Excption >>>>> ${apprveJobResult.exception.toString()}');
   }

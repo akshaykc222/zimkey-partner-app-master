@@ -361,6 +361,10 @@ String getPartnerCalendar =
           bookingServiceItemStatus
           id      
           canReschedule
+          pendingRescheduleByCustomer{
+          startDateTime
+          endDateTime
+          }
           canUncommit
           canStartJob
           workCode
@@ -773,10 +777,12 @@ mutation updatePartnerDetails(
 //Approve Pending Job
 String approveJob = '''
 mutation approveJob(
-  \$bookingServiceItemId : ID!
+  \$bookingServiceItemId : ID!,\$status:Boolean!
 ){
   approveJob(
     bookingServiceItemId: \$bookingServiceItemId
+    status:\$status
+    
     ){
     id
   }

@@ -335,6 +335,7 @@ class BookingServiceItems {
   bool? canUncommit;
   bool? canCancel;
   bool? canStartJob;
+  PendingRescheduleByCustomer? pendingRescheduleByCustomer;
 
   BookingServiceItems(
       {this.id,
@@ -355,9 +356,14 @@ class BookingServiceItems {
       this.canRework,
       this.canUncommit,
       this.canStartJob,
-      this.actualStartDateTime});
+      this.actualStartDateTime,
+      this.pendingRescheduleByCustomer});
 
   BookingServiceItems.fromJson(Map<String, dynamic> json) {
+    pendingRescheduleByCustomer = json['pendingRescheduleByCustomer'] == null
+        ? null
+        : PendingRescheduleByCustomer.fromJson(
+            json['pendingRescheduleByCustomer']);
     actualStartDateTime = actualStartDateTime == null
         ? null
         : DateTime.parse(json['actualStartDateTime']);

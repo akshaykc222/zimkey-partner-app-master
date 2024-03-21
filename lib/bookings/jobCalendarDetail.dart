@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:instant/instant.dart' as ins;
 import 'package:instant/instant.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:recase/recase.dart';
 import 'package:timeline_tile/timeline_tile.dart';
@@ -12,6 +13,7 @@ import 'package:zimkey_partner_app/models/team_model.dart';
 
 import '../fbState.dart';
 import '../home/dashboard.dart';
+import '../models/GetServiceBookingSlot.dart';
 import '../models/bookingsModel.dart' as b;
 import '../models/jobModel.dart';
 import '../models/serviceModel.dart';
@@ -94,6 +96,13 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
       print('finish job success!!!!!');
     }
     return finishJobResult;
+  }
+
+  String filterTimeSlot(GetServiceBookingSlot serviceBookingSlot) {
+    DateFormat format = DateFormat.Hm();
+    String output =
+        '${format.format(serviceBookingSlot.start.toLocal())} - ${format.format(serviceBookingSlot.end.toLocal())}';
+    return output;
   }
 
 //Uncommit Job
@@ -199,6 +208,218 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
               // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                (widget.jobitem!.bookingServiceItem!.bookingServiceItemStatus ==
+                        BookingServiceItemStatusTypeEnum
+                            .PARTNER_APPROVAL_PENDING)
+                    ? Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: zimkeyLightGrey,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Reschedule Request",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              widget.jobitem?.bookingServiceItem
+                                          ?.pendingRescheduleByCustomer !=
+                                      null
+                                  ? "Partner want to reschedule this work to \n${widget.jobitem?.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.day.toString().padLeft(2, '0')}-${widget.jobitem?.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.month.toString().padLeft(2, '0')}-${widget.jobitem?.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.year} | ${filterTimeSlot(GetServiceBookingSlot(start: widget.jobitem!.bookingServiceItem!.pendingRescheduleByCustomer!.startDateTime, end: widget.jobitem!.bookingServiceItem!.pendingRescheduleByCustomer!.endDateTime, available: true))}"
+                                  : "",
+                              overflow: TextOverflow.visible,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () => jobOfferDialog(
+                                        "Decline",
+                                        "Are you sure you want to decline",
+                                        context, () async {
+                                      print("tapping");
+                                      QueryResult apprveJobResult =
+                                          await approvePendingJob(
+                                              widget.jobitem!
+                                                  .bookingServiceItemId,
+                                              false);
+                                      print(apprveJobResult);
+                                      if (apprveJobResult != null &&
+                                          apprveJobResult.data != null &&
+                                          apprveJobResult.data!['approveJob'] !=
+                                              null) {
+                                        showCustomDialog(
+                                          'Yay!',
+                                          'You\'ve successfully approved this job.',
+                                          context,
+                                          Dashboard(
+                                            index: 2,
+                                          ),
+                                        );
+                                      } else if (apprveJobResult.hasException) {
+                                        if (apprveJobResult
+                                                    .exception!.graphqlErrors !=
+                                                null &&
+                                            apprveJobResult.exception!
+                                                .graphqlErrors.isNotEmpty)
+                                          showCustomDialog(
+                                              'Ooops!',
+                                              '${apprveJobResult.exception!.graphqlErrors[0].message}',
+                                              context,
+                                              null);
+                                        else
+                                          showCustomDialog(
+                                              'Ooops!',
+                                              'Looks like something went wrong. Try again later.',
+                                              context,
+                                              null);
+                                        print(
+                                            'Approve JOB excpetion >> ${apprveJobResult.exception}');
+                                      }
+                                    }),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 5),
+                                      decoration: BoxDecoration(
+                                        color: zimkeyWhite,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                zimkeyDarkGrey.withOpacity(0.1),
+                                            blurRadius:
+                                                5.0, // soften the shadow
+                                            spreadRadius:
+                                                1.0, //extend the shadow
+                                            offset: const Offset(
+                                              2.0, // Move to right 10  horizontally
+                                              3.0, // Move to bottom 10 Vertically
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 13),
+                                      child: const Text(
+                                        'Decline',
+                                        style: TextStyle(
+                                          color: zimkeyRed,
+                                          // color: AppColors.zimkeyWhite,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () => jobOfferDialog(
+                                        "Accept",
+                                        "Are you sure you want to accept",
+                                        context, () async {
+                                      print("tapping");
+                                      QueryResult apprveJobResult =
+                                          await approvePendingJob(
+                                              widget.jobitem!
+                                                  .bookingServiceItemId,
+                                              true);
+                                      print(apprveJobResult);
+                                      if (apprveJobResult != null &&
+                                          apprveJobResult.data != null &&
+                                          apprveJobResult.data!['approveJob'] !=
+                                              null) {
+                                        showCustomDialog(
+                                          'Yay!',
+                                          'You\'ve successfully approved this job.',
+                                          context,
+                                          Dashboard(
+                                            index: 2,
+                                          ),
+                                        );
+                                      } else if (apprveJobResult.hasException) {
+                                        if (apprveJobResult
+                                                    .exception!.graphqlErrors !=
+                                                null &&
+                                            apprveJobResult.exception!
+                                                .graphqlErrors.isNotEmpty)
+                                          showCustomDialog(
+                                              'Ooops!',
+                                              '${apprveJobResult.exception!.graphqlErrors[0].message}',
+                                              context,
+                                              null);
+                                        else
+                                          showCustomDialog(
+                                              'Ooops!',
+                                              'Looks like something went wrong. Try again later.',
+                                              context,
+                                              null);
+                                        print(
+                                            'Approve JOB excpetion >> ${apprveJobResult.exception}');
+                                      }
+                                    }),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 5),
+                                      decoration: BoxDecoration(
+                                        color: zimkeyWhite,
+                                        // color: AppColors.buttonColor,
+                                        // border: Border.all(
+                                        //   color: zimkeyOrange.withOpacity(0.7),
+                                        // ),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                zimkeyDarkGrey.withOpacity(0.1),
+                                            blurRadius:
+                                                5.0, // soften the shadow
+                                            spreadRadius:
+                                                1.0, //extend the shadow
+                                            offset: const Offset(
+                                              2.0, // Move to right 10  horizontally
+                                              3.0, // Move to bottom 10 Vertically
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 13),
+                                      child: const Text(
+                                        'Accept',
+                                        style: TextStyle(
+                                          color: zimkeyGreen,
+                                          // color: AppColors.zimkeyWhite,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      )
+                    : SizedBox(),
                 Hero(
                   tag: 'tag${widget.jobitem!.id}',
                   child: Material(
@@ -278,60 +499,66 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                     width: 10,
                                   ),
                                   //start job
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: () async {
-                                        reworkJobDialog(
-                                            'Accept Job',
-                                            'Are you sure you want to accept this job.',
-                                            context,
-                                            null,
-                                            widget.jobitem,
-                                            false);
-                                      },
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 15, horizontal: 20),
-                                        decoration: BoxDecoration(
-                                          color: zimkeyOrange,
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: zimkeyLightGrey
-                                                  .withOpacity(0.1),
-                                              blurRadius:
-                                                  5.0, // soften the shadow
-                                              spreadRadius:
-                                                  2.0, //extend the shadow
-                                              offset: Offset(
-                                                1.0, // Move to right 10  horizontally
-                                                1.0, // Move to bottom 10 Vertically
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        child: Text(
-                                          'Reject',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: zimkeyWhite,
-                                            fontFamily: 'Inter',
-                                            // fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                                  // Expanded(
+                                  //   child: InkWell(
+                                  //     onTap: () async {
+                                  //       reworkJobDialog(
+                                  //           'Reject Job',
+                                  //           'Are you sure you want to Reject this job.',
+                                  //           context,
+                                  //           null,
+                                  //           widget.jobitem,
+                                  //           false);
+                                  //     },
+                                  //     child: Container(
+                                  //       alignment: Alignment.center,
+                                  //       padding: EdgeInsets.symmetric(
+                                  //           vertical: 15, horizontal: 20),
+                                  //       decoration: BoxDecoration(
+                                  //         color: zimkeyOrange,
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(30),
+                                  //         boxShadow: [
+                                  //           BoxShadow(
+                                  //             color: zimkeyLightGrey
+                                  //                 .withOpacity(0.1),
+                                  //             blurRadius:
+                                  //                 5.0, // soften the shadow
+                                  //             spreadRadius:
+                                  //                 2.0, //extend the shadow
+                                  //             offset: Offset(
+                                  //               1.0, // Move to right 10  horizontally
+                                  //               1.0, // Move to bottom 10 Vertically
+                                  //             ),
+                                  //           )
+                                  //         ],
+                                  //       ),
+                                  //       child: Text(
+                                  //         'Reject',
+                                  //         style: TextStyle(
+                                  //           fontSize: 16,
+                                  //           color: zimkeyWhite,
+                                  //           fontFamily: 'Inter',
+                                  //           // fontWeight: FontWeight.bold,
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // )
                                 ],
                               ),
                             )
                           : widget.jobitem?.bookingServiceItem?.canStartJob ==
                                       true ||
                                   widget.jobitem?.bookingServiceItem
-                                          ?.canUncommit ==
-                                      true
+                                              ?.canUncommit ==
+                                          true &&
+                                      (widget.jobitem?.partnerCalendarStatus !=
+                                          PartnerCalendarStatusTypeEnum
+                                              .CANCELED_PARTNER) &&
+                                      (widget.jobitem?.partnerCalendarStatus !=
+                                          PartnerCalendarStatusTypeEnum
+                                              .CANCELED_CUSTOMER)
                               ? Container(
                                   margin: EdgeInsets.only(bottom: 15),
                                   padding: EdgeInsets.symmetric(horizontal: 15),
@@ -343,14 +570,14 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       widget.jobitem?.bookingServiceItem
                                                       ?.canUncommit ==
                                                   true &&
-                                              ((widget.jobitem
-                                                          ?.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_CUSTOMER) ||
-                                                  (widget.jobitem
-                                                          ?.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_PARTNER))
+                                              (widget.jobitem
+                                                      ?.partnerCalendarStatus !=
+                                                  PartnerCalendarStatusTypeEnum
+                                                      .CANCELED_PARTNER) &&
+                                              (widget.jobitem
+                                                      ?.partnerCalendarStatus !=
+                                                  PartnerCalendarStatusTypeEnum
+                                                      .CANCELED_CUSTOMER)
                                           ? Expanded(
                                               child: InkWell(
                                                 onTap: () async {
@@ -401,7 +628,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                                     ],
                                                   ),
                                                   child: Text(
-                                                    'Unassign Job',
+                                                    'Unassign Job ',
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       color: zimkeyWhite,
@@ -420,14 +647,14 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       widget.jobitem?.bookingServiceItem
                                                       ?.canStartJob ==
                                                   true &&
-                                              ((widget.jobitem
-                                                          ?.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_CUSTOMER) ||
-                                                  (widget.jobitem
-                                                          ?.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_PARTNER))
+                                              (widget.jobitem
+                                                      ?.partnerCalendarStatus !=
+                                                  PartnerCalendarStatusTypeEnum
+                                                      .CANCELED_PARTNER) &&
+                                              (widget.jobitem
+                                                      ?.partnerCalendarStatus !=
+                                                  PartnerCalendarStatusTypeEnum
+                                                      .CANCELED_CUSTOMER)
                                           ? Expanded(
                                               child: InkWell(
                                                 onTap: () async {
@@ -539,78 +766,6 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                               // SizedBox(
                               //   width: 20,
                               // ),
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () async {
-                                    QueryResult apprveJobResult =
-                                        await approvePendingJob(widget
-                                            .jobitem!.bookingServiceItemId);
-                                    if (apprveJobResult != null &&
-                                        apprveJobResult.data != null &&
-                                        apprveJobResult.data!['approveJob'] !=
-                                            null) {
-                                      showCustomDialog(
-                                        'Yay!',
-                                        'You\'ve successfully approved this job.',
-                                        context,
-                                        Dashboard(
-                                          index: 2,
-                                        ),
-                                      );
-                                    } else if (apprveJobResult.hasException) {
-                                      if (apprveJobResult
-                                                  .exception!.graphqlErrors !=
-                                              null &&
-                                          apprveJobResult.exception!
-                                              .graphqlErrors.isNotEmpty)
-                                        showCustomDialog(
-                                            'Ooops!',
-                                            '${apprveJobResult.exception!.graphqlErrors[0].message}',
-                                            context,
-                                            null);
-                                      else
-                                        showCustomDialog(
-                                            'Ooops!',
-                                            'Looks like something went wrong. Try again later.',
-                                            context,
-                                            null);
-                                      print(
-                                          'Approve JOB excpetion >> ${apprveJobResult.exception}');
-                                    }
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    // width: MediaQuery.of(context).size.width,
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 20),
-                                    decoration: BoxDecoration(
-                                      color: zimkeyBodyOrange,
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color:
-                                              zimkeyLightGrey.withOpacity(0.05),
-                                          blurRadius: 3.0, // soften the shadow
-                                          spreadRadius: 3.0, //extend the shadow
-                                          offset: Offset(
-                                            1.0, // Move to right 10  horizontally
-                                            3.0, // Move to bottom 10 Vertically
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    child: Text(
-                                      'Approve',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: zimkeyOrange,
-                                        fontFamily: 'Inter',
-                                        // fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -624,12 +779,11 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                               widget.jobitem?.partnerCalendarStatus ==
                                   PartnerCalendarStatusTypeEnum
                                       .REWORK_PENDING) &&
-                          ((widget.jobitem?.partnerCalendarStatus !=
-                                  PartnerCalendarStatusTypeEnum
-                                      .CANCELED_CUSTOMER) ||
-                              (widget.jobitem?.partnerCalendarStatus !=
-                                  PartnerCalendarStatusTypeEnum
-                                      .CANCELED_PARTNER)))
+                          (widget.jobitem?.partnerCalendarStatus !=
+                              PartnerCalendarStatusTypeEnum
+                                  .CANCELED_CUSTOMER) &&
+                          (widget.jobitem?.partnerCalendarStatus !=
+                              PartnerCalendarStatusTypeEnum.CANCELED_PARTNER))
                         Column(
                           children: [
                             //reschedule job-----------
@@ -824,7 +978,12 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       ?.bookingServiceItemType?.index ==
                                   1 &&
                               widget.jobitem?.partnerCalendarStatus ==
-                                  PartnerCalendarStatusTypeEnum.REWORK_PENDING))
+                                  PartnerCalendarStatusTypeEnum
+                                      .REWORK_PENDING) &&
+                          (widget.jobitem?.partnerCalendarStatus !=
+                              PartnerCalendarStatusTypeEnum.CANCELED_PARTNER) &&
+                          (widget.jobitem?.partnerCalendarStatus !=
+                              PartnerCalendarStatusTypeEnum.CANCELED_CUSTOMER))
                         InkWell(
                           onTap: () async {
                             Navigator.push(
@@ -3212,6 +3371,100 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                         ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ));
+  }
+
+  jobOfferDialog(
+      String title, String msg, BuildContext context, Function function) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              contentTextStyle: TextStyle(
+                color: zimkeyBlack,
+                fontWeight: FontWeight.normal,
+                fontSize: 15,
+              ),
+              titlePadding: EdgeInsets.symmetric(
+                vertical: 0,
+                horizontal: 0,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 15,
+                horizontal: 0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(20.0),
+                ),
+              ),
+              title: Container(
+                padding: EdgeInsets.only(left: 20, right: 20, top: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$title',
+                        style: TextStyle(
+                          color: zimkeyBlack,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Get.back();
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: zimkeyDarkGrey.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.clear,
+                          color: zimkeyDarkGrey,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              content: Container(
+                padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+                child: new Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      '$msg',
+                      style: TextStyle(
+                        color: zimkeyDarkGrey,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: zimkeyOrange,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15))),
+                            onPressed: () => function(),
+                            child: Text(title)),
+                      ),
+                    )
                   ],
                 ),
               ),

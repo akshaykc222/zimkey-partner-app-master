@@ -245,28 +245,31 @@ class BookingServiceItem {
   bool? canReschedule;
   bool? canUncommit;
   bool? canCancel;
+  PendingRescheduleByCustomer? pendingRescheduleByCustomer;
 
-  BookingServiceItem({
-    this.id,
-    this.bookingServiceId,
-    this.bookingServiceItemStatus,
-    this.startDateTime,
-    this.endDateTime,
-    this.servicePartnerId,
-    this.bookingAddons,
-    this.bookingServiceItemType,
-    this.reschedules,
-    this.servicePartnerApproval,
-    this.subBookings,
-    this.workCode,
-    this.modificationReason,
-    this.canCancel,
-    this.canReschedule,
-    this.canRework,
-    this.canUncommit,
-  });
+  BookingServiceItem(
+      {this.id,
+      this.bookingServiceId,
+      this.bookingServiceItemStatus,
+      this.startDateTime,
+      this.endDateTime,
+      this.servicePartnerId,
+      this.bookingAddons,
+      this.bookingServiceItemType,
+      this.reschedules,
+      this.servicePartnerApproval,
+      this.subBookings,
+      this.workCode,
+      this.modificationReason,
+      this.canCancel,
+      this.canReschedule,
+      this.canRework,
+      this.canUncommit,
+      this.pendingRescheduleByCustomer});
 
   BookingServiceItem.fromJson(Map<String, dynamic> json) {
+    pendingRescheduleByCustomer = PendingRescheduleByCustomer.fromJson(
+        json['pendingRescheduleByCustomer']);
     id = json['id'];
     bookingServiceId = json['bookingServiceId'];
     bookingServiceItemStatus = json['bookingServiceItemStatus'] != null
@@ -337,6 +340,27 @@ class BookingServiceItem {
     data['canUncommit'] = this.canUncommit;
     return data;
   }
+}
+
+class PendingRescheduleByCustomer {
+  final DateTime startDateTime;
+  final DateTime endDateTime;
+
+  PendingRescheduleByCustomer({
+    required this.startDateTime,
+    required this.endDateTime,
+  });
+
+  factory PendingRescheduleByCustomer.fromJson(Map<String, dynamic> json) =>
+      PendingRescheduleByCustomer(
+        startDateTime: DateTime.parse(json["startDateTime"]),
+        endDateTime: DateTime.parse(json["endDateTime"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "startDateTime": startDateTime.toIso8601String(),
+        "endDateTime": endDateTime.toIso8601String(),
+      };
 }
 
 class BookingServiceItemReschedules {
