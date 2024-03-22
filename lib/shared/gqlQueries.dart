@@ -709,8 +709,9 @@ mutation addAddon(\$units: Float!,\$addonId: ID!, \$bookingServiceItemId: ID!){
 //Add Additional work
 String addAdditionalWork = '''
 mutation addAdditionalWork(
-   \$addons: [BookingServiceAddonGqlInput!]!,
-   \$startDateTime: DateTime!,
+   \$addons: [BookingServiceAddonGqlInput!],
+   \$startDateTime: DateTime,
+   \$endDateTime: DateTime,
    \$units: Float!,
    \$bookingServiceItemId: ID!,
    \$modificationReason: String
@@ -718,12 +719,78 @@ mutation addAdditionalWork(
   addAdditionalWork(
     addons: \$addons
     startDateTime: \$startDateTime
+    endDateTime:\$endDateTime
     units: \$units
-    bookingServiceItemId: \$bookingServiceItemId,
+    bookingServiceItemId: \$bookingServiceItemId
     modificationReason: \$modificationReason
   ) {
-    id
-  }
+        id
+        bookingServiceItemId
+        bookingServiceItem {
+            id
+            bookingServiceItemStatus
+        }
+        modificationReason
+        bookingAdditionalWorkStatus
+        additionalHoursItemPrice {
+            unitPrice
+            partnerPrice
+            commission
+            commissionTax
+            partnerTax
+            totalTax
+            commissionAmount
+            commissionTotal
+            partnerTotal
+            grandTotal
+            total
+        }
+        additionalHoursUnits
+        unit
+        minUnit
+        maxUnit
+        additionalHoursAmount {
+            unitPrice
+            partnerRate
+            partnerDiscount
+            partnerAmount
+            partnerGSTPercentage
+            partnerGSTAmount
+            totalPartnerAmount
+            commissionPercentage
+            commissionRate
+            commissionDiscount
+            commissionAmount
+            commissionGSTPercentage
+            commissionGSTAmount
+            totalCommission
+            subTotal
+            totalDiscount
+            totalAmount
+            totalGSTAmount
+            grandTotal
+            totalRefundable
+            totalRefunded
+        }
+        bookingAddons {
+            name
+            units
+            unit
+            minUnit
+            maxUnit
+            addedBy
+            addonId
+            bookingServiceItemId
+        }
+        totalAdditionalWorkAmount {
+            subTotal
+            totalDiscount
+            totalAmount
+            totalGSTAmount
+            grandTotal
+        }
+        isPaid
+    }
 }
   '''
     .replaceAll('\n', '');

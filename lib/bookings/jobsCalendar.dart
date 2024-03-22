@@ -1146,7 +1146,7 @@ class _BookingWidgetState extends State<BookingWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      refetchlist!();
+      // refetchlist!();
     }
   }
 

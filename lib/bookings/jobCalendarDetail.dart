@@ -919,6 +919,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                             : InkWell(
                                 onTap: () async {
                                   // FocusNode.
+                                  print("test");
                                   FocusScope.of(context).unfocus();
                                   finishJobDialog(
                                       'Finish Job',
@@ -2759,378 +2760,368 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
     );
   }
 
+  String formatDuration(Duration duration) {
+    // Parse the duration string
+
+    // Calculate days, hours, and remaining minutes
+    int days = duration.inDays;
+    int hours = duration.inHours % 24;
+    int minutes = duration.inMinutes % 60;
+
+    // Build the formatted string
+    String formattedString = '';
+    if (days > 0) formattedString += '$days day(s) ';
+    if (hours > 0) formattedString += '$hours hr(s) ';
+    if (minutes > 0) formattedString += '$minutes min(s)';
+
+    return formattedString.trim();
+  }
+
   finishJobDialog(String title, String msg, BuildContext context,
       Widget? backPage, PartnerCalendarItem jobitem) {
     /////////----------
-    print("booked data${jobitem.serviceDate}");
-    String hr = DateTime.parse('${jobitem.serviceDate}').hour.toString();
-    if (hr.length < 2) hr = '0$hr';
-    String endHr;
-    String endMin;
-    String min = DateTime.parse('${jobitem.serviceDate}').minute.toString();
-    if (min.length < 2) min = '0$min';
-    endMin = min;
-    endHr = '${DateTime.parse('${jobitem.serviceDate}').hour + 1}';
-    if (endHr.toString().length < 2) endHr = '0$endHr';
-    var diff = jobitem.bookingServiceItem!.actualStartDateTime!
-        .difference(DateTime.now());
-    int jobdurationHrs = (diff.inHours % 24).abs();
-    int jobdurationDays = diff.inDays.abs();
-    /////////----------
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        contentTextStyle: TextStyle(
-          color: zimkeyBlack,
-          fontWeight: FontWeight.normal,
-          fontSize: 15,
-        ),
-        titlePadding: EdgeInsets.symmetric(
-          vertical: 0,
-          horizontal: 0,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          vertical: 15,
-          horizontal: 0,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(20.0),
-          ),
-        ),
-        title: Container(
-          padding: EdgeInsets.only(left: 20, right: 15, top: 15),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  '$title',
-                  style: TextStyle(
-                    color: zimkeyBlack,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
+    print("booked data${jobitem.bookingServiceItem?.actualStartDateTime}");
+    try {
+      String hr = DateTime.parse('${jobitem.serviceDate}').hour.toString();
+      if (hr.length < 2) hr = '0$hr';
+      String endHr;
+      String endMin;
+      String min = DateTime.parse('${jobitem.serviceDate}').minute.toString();
+      if (min.length < 2) min = '0$min';
+      endMin = min;
+      endHr = '${DateTime.parse('${jobitem.serviceDate}').hour + 1}';
+      if (endHr.toString().length < 2) endHr = '0$endHr';
+      var diff = DateTime.now().difference(
+          jobitem.bookingServiceItem?.actualStartDateTime == null
+              ? jobitem.bookingServiceItem!.startDateTime!
+              : jobitem.bookingServiceItem!.actualStartDateTime!);
+
+      // int jobdurationHrs = (diff.inHours % 24).abs();
+      // int jobdurationDays = diff.inDays.abs();
+      /////////----------
+      // print("opening  $diff $jobdurationDays $jobdurationHrs");
+      showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(builder: (context, d) {
+          return AlertDialog(
+            contentTextStyle: TextStyle(
+              color: zimkeyBlack,
+              fontWeight: FontWeight.normal,
+              fontSize: 15,
+            ),
+            titlePadding: EdgeInsets.symmetric(
+              vertical: 0,
+              horizontal: 0,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 15,
+              horizontal: 0,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(20.0),
               ),
-              InkWell(
-                onTap: () {
-                  _finishComments.clear();
-                  Get.back();
-                },
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: zimkeyDarkGrey.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.clear,
-                    color: zimkeyDarkGrey,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        content: Container(
-          padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
-          child: new Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // Start job date time
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            title: Container(
+              padding: EdgeInsets.only(left: 20, right: 15, top: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Start Date & Time',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey.withOpacity(0.7),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                  Expanded(
+                    child: Text(
+                      '$title',
+                      style: TextStyle(
+                        color: zimkeyBlack,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                  SizedBox(
-                    height: 3,
-                  ),
-                  Text(
-                    '${jobitem.serviceDate!.day.toString().padLeft(2, '0')}-${jobitem.serviceDate!.month.toString().padLeft(2, '0')}-${jobitem.serviceDate!.year} | ${hr.padLeft(2, '0')}:${min.padLeft(2, '0')} - ${endHr.padLeft(2, '0')}:${endMin.padLeft(2, '0')}',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey.withOpacity(1),
-                      // fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                  InkWell(
+                    onTap: () {
+                      _finishComments.clear();
+                      Get.back();
+                    },
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: zimkeyDarkGrey.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.clear,
+                        color: zimkeyDarkGrey,
+                        size: 16,
+                      ),
                     ),
-                    textAlign: TextAlign.right,
                   ),
                 ],
               ),
-              SizedBox(
-                height: 10,
-              ),
-              //End job date time
-              Column(
+            ),
+            content: Container(
+              padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+              child: new Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'End Date & Time',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey.withOpacity(0.7),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 3,
-                  ),
-                  Text(
-                    '${DateTime.now().day.toString().padLeft(2, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year} | ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey.withOpacity(1),
-                      // fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              //End job date time
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Job Duration',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey.withOpacity(0.7),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 3,
-                  ),
-                  Wrap(
+                children: <Widget>[
+                  // Start job date time
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (jobdurationDays != null && jobdurationDays > 0)
-                        Text(
-                          '$jobdurationDays day(s)',
-                          style: TextStyle(
-                            color: zimkeyDarkGrey.withOpacity(1),
-                            // fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                          textAlign: TextAlign.right,
+                      Text(
+                        'Start Date & Time',
+                        style: TextStyle(
+                          color: zimkeyDarkGrey.withOpacity(0.7),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
-                      if (jobdurationHrs != null && jobdurationHrs > 0)
-                        Text(
-                          ' $jobdurationHrs hours(s)',
-                          style: TextStyle(
-                            color: zimkeyDarkGrey.withOpacity(1),
-                            // fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                          textAlign: TextAlign.right,
+                      ),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      Text(
+                        '${jobitem.serviceDate!.day.toString().padLeft(2, '0')}-${jobitem.serviceDate!.month.toString().padLeft(2, '0')}-${jobitem.serviceDate!.year} | ${hr.padLeft(2, '0')}:${min.padLeft(2, '0')} - ${endHr.padLeft(2, '0')}:${endMin.padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: zimkeyDarkGrey.withOpacity(1),
+                          // fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
+                        textAlign: TextAlign.right,
+                      ),
                     ],
                   ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: zimkeyLightGrey,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                // width: MediaQuery.of(context).size.width,
-                padding:
-                    EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
+                  SizedBox(
+                    height: 10,
+                  ),
+                  //End job date time
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'End Date & Time',
                         style: TextStyle(
-                          color: zimkeyDarkGrey,
+                          color: zimkeyDarkGrey.withOpacity(0.7),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      Text(
+                        '${DateTime.now().day.toString().padLeft(2, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year} | ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: zimkeyDarkGrey.withOpacity(1),
                           // fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
-                        maxLength: 300,
-                        maxLines: 4,
-                        textCapitalization: TextCapitalization.characters,
-                        controller: _finishComments,
-                        decoration: InputDecoration(
-                          counterText: '',
-                          fillColor: zimkeyOrange,
-                          border: InputBorder.none,
-                          hintText: 'Any comments or feedback',
-                          hintStyle: TextStyle(
-                            color: zimkeyDarkGrey.withOpacity(0.7),
-                            // fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                        textAlign: TextAlign.right,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  //End job date time
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Job Duration',
+                        style: TextStyle(
+                          color: zimkeyDarkGrey.withOpacity(0.7),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 3,
+                      ),
+                      Wrap(
+                        children: [
+                          Text(
+                            formatDuration(diff),
+                            style: TextStyle(
+                              color: zimkeyDarkGrey.withOpacity(1),
+                              // fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            textAlign: TextAlign.right,
                           ),
-                        ),
-                        onChanged: (value) {
-                          if (_finishComments.text.isNotEmpty)
-                            setState(() {
-                              showClearIcon = true;
-                            });
-                          else
-                            setState(() {
-                              showClearIcon = false;
-                            });
-                        },
+                        ],
                       ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    if (showClearIcon)
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _finishComments.clear();
-                            showClearIcon = false;
-                          });
-                        },
-                        child: Icon(
-                          Icons.clear,
-                          size: 16,
-                          color: zimkeyDarkGrey,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 40,
-              ),
-              InkWell(
-                onTap: () async {
-                  // if (_finishComments.text.isNotEmpty) {
-                  setState(() {
-                    isLoading = true;
-                  });
-                  QueryResult finishJobResult = await finishJobMutation(
-                    jobitem.bookingServiceItem!.id,
-                  );
-                  setState(() {
-                    isLoading = false;
-                  });
-                  Get.back();
-                  if (finishJobResult != null &&
-                      finishJobResult.data != null &&
-                      finishJobResult.data!['finishJob'] != null) {
-                    print('finish job success!!!!!');
-                    try {
-                      widget.refetchJobs!();
-                    } catch (e) {}
-
-                    if (jobdurationDays != null && jobdurationHrs != null) {
-                      if (jobdurationDays > 0 && jobdurationHrs > 0) {
-                        showCustomDialog(
-                            'Done!',
-                            'You have successfully completed your Zimkey job in $jobdurationDays day(s) $jobdurationHrs hour(s). All your completed jobs will be available under "Completed" tab.',
-                            context,
-                            Dashboard(
-                              index: 2,
-                              tabIndex: 2,
-                            ));
-                      } else if (jobdurationDays > 0 && jobdurationHrs == 0) {
-                        showCustomDialog(
-                            'Done!',
-                            'You have successfully completed your Zimkey job in $jobdurationDays day(s). All your completed jobs will be available under "Completed" tab.',
-                            context,
-                            Dashboard(
-                              index: 2,
-                            ));
-                      } else if (jobdurationDays == 0 && jobdurationHrs > 0) {
-                        showCustomDialog(
-                            'Done!',
-                            'You have successfully completed your Zimkey job in $jobdurationHrs hour(s). All your completed jobs will be available under "Completed" tab.',
-                            context,
-                            Dashboard(
-                              index: 2,
-                            ));
-                      } else {
-                        showCustomDialog(
-                            'Done!',
-                            'You have successfully completed your Zimkey job . All your completed jobs will be available under "Completed" tab.',
-                            context,
-                            Dashboard(
-                              index: 2,
-                            ));
-                      }
-                    } else {
-                      showCustomDialog(
-                          'Done!',
-                          'You have successfully completed your Zimkey job . All your completed jobs will be available under "Completed" tab.',
-                          context,
-                          Dashboard(
-                            index: 2,
-                          ));
-                    }
-                  }
-                  if (finishJobResult.hasException) {
-                    if (finishJobResult.exception!.graphqlErrors != null &&
-                        finishJobResult.exception!.graphqlErrors.isNotEmpty)
-                      showCustomDialog(
-                          'Oops',
-                          '${finishJobResult.exception!.graphqlErrors.first.message}',
-                          context,
-                          null);
-
-                    if (finishJobResult.exception!.linkException != null)
-                      showCustomDialog(
-                          'Oops',
-                          '${finishJobResult.exception!.linkException.toString()}',
-                          context,
-                          null);
-                  }
-                  // }
-                },
-                child: Center(
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: MediaQuery.of(context).size.width / 2,
-                    padding: EdgeInsets.symmetric(vertical: 13, horizontal: 10),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Container(
                     decoration: BoxDecoration(
-                      color: zimkeyOrange,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: zimkeyLightGrey.withOpacity(0.1),
-                          blurRadius: 5.0, // soften the shadow
-                          spreadRadius: 2.0, //extend the shadow
-                          offset: Offset(
-                            1.0, // Move to right 10  horizontally
-                            1.0, // Move to bottom 10 Vertically
+                      color: zimkeyLightGrey,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    // width: MediaQuery.of(context).size.width,
+                    padding:
+                        EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            style: TextStyle(
+                              color: zimkeyDarkGrey,
+                              // fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLength: 300,
+                            maxLines: 4,
+                            textCapitalization: TextCapitalization.characters,
+                            controller: _finishComments,
+                            decoration: InputDecoration(
+                              counterText: '',
+                              fillColor: zimkeyOrange,
+                              border: InputBorder.none,
+                              hintText: 'Any comments or feedback',
+                              hintStyle: TextStyle(
+                                color: zimkeyDarkGrey.withOpacity(0.7),
+                                // fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              if (_finishComments.text.isNotEmpty)
+                                setState(() {
+                                  showClearIcon = true;
+                                });
+                              else
+                                setState(() {
+                                  showClearIcon = false;
+                                });
+                            },
                           ),
-                        )
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        if (showClearIcon)
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _finishComments.clear();
+                                showClearIcon = false;
+                              });
+                            },
+                            child: Icon(
+                              Icons.clear,
+                              size: 16,
+                              color: zimkeyDarkGrey,
+                            ),
+                          ),
                       ],
                     ),
-                    child: const Text(
-                      'Finish',
-                      style: TextStyle(
-                        color: zimkeyWhite,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
                   ),
-                ),
+                  SizedBox(
+                    height: 40,
+                  ),
+                  isLoading
+                      ? SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(),
+                        )
+                      : InkWell(
+                          onTap: () async {
+                            // if (_finishComments.text.isNotEmpty) {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            QueryResult finishJobResult =
+                                await finishJobMutation(
+                              jobitem.bookingServiceItem!.id,
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            Get.back();
+                            if (finishJobResult != null &&
+                                finishJobResult.data != null &&
+                                finishJobResult.data!['finishJob'] != null) {
+                              print('finish job success!!!!!');
+                              try {
+                                widget.refetchJobs!();
+                              } catch (e) {}
+
+                              showCustomDialog(
+                                  'Done!',
+                                  'You have successfully completed your Zimkey job in ${formatDuration(diff)} . All your completed jobs will be available under "Completed" tab.',
+                                  context,
+                                  Dashboard(
+                                    index: 2,
+                                  ));
+                            }
+                            if (finishJobResult.hasException) {
+                              if (finishJobResult.exception!.graphqlErrors !=
+                                      null &&
+                                  finishJobResult
+                                      .exception!.graphqlErrors.isNotEmpty)
+                                showCustomDialog(
+                                    'Oops',
+                                    '${finishJobResult.exception!.graphqlErrors.first.message}',
+                                    context,
+                                    null);
+
+                              if (finishJobResult.exception!.linkException !=
+                                  null)
+                                showCustomDialog(
+                                    'Oops',
+                                    '${finishJobResult.exception!.linkException.toString()}',
+                                    context,
+                                    null);
+                            }
+                            // }
+                          },
+                          child: Center(
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: MediaQuery.of(context).size.width / 2,
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 13, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: zimkeyOrange,
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: zimkeyLightGrey.withOpacity(0.1),
+                                    blurRadius: 5.0, // soften the shadow
+                                    spreadRadius: 2.0, //extend the shadow
+                                    offset: Offset(
+                                      1.0, // Move to right 10  horizontally
+                                      1.0, // Move to bottom 10 Vertically
+                                    ),
+                                  )
+                                ],
+                              ),
+                              child: const Text(
+                                'Finish',
+                                style: TextStyle(
+                                  color: zimkeyWhite,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
+        }),
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   startJobDialog(String title, String msg, BuildContext context,

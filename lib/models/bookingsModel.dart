@@ -364,7 +364,7 @@ class BookingServiceItems {
         ? null
         : PendingRescheduleByCustomer.fromJson(
             json['pendingRescheduleByCustomer']);
-    actualStartDateTime = actualStartDateTime == null
+    actualStartDateTime = json['actualStartDateTime'] == null
         ? null
         : DateTime.parse(json['actualStartDateTime']);
     id = json['id'];

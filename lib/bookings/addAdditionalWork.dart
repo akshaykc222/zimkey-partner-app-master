@@ -239,13 +239,25 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
     final MutationOptions _options = MutationOptions(
       document: gql(addAdditionalWork),
       variables: <String, dynamic>{
-        "addons": selectedAddons,
-        "startDateTime": fullBookingDate.toString(),
+        "addons": selectedAddons.isEmpty ? null : selectedAddons,
+        "startDateTime":
+            fullBookingDate == null ? null : fullBookingDate.toString(),
+        "endDateTime": fullBookingDate == null
+            ? null
+            : fullBookingDate?.add(Duration(hours: 1)).toString(),
         "units": serviceUnit,
         "bookingServiceItemId": bookingServiceItemId,
-        "modificationReason": _commentMsg.text,
+        "modificationReason":
+            _commentMsg.text.isEmpty ? null : _commentMsg.text,
       },
     );
+    print({
+      "addons": selectedAddons,
+      "startDateTime": fullBookingDate.toString(),
+      "units": serviceUnit,
+      "bookingServiceItemId": bookingServiceItemId,
+      "modificationReason": _commentMsg.text,
+    });
     setState(() {
       isLoading = true;
     });
