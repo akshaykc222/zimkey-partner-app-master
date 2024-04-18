@@ -149,12 +149,14 @@ class BookingServiceItem {
   final String bookingServiceItemStatus;
   final DateTime? endDateTime;
   final DateTime? startDateTime;
+  final ChangedPrice? changedPrice;
 
   BookingServiceItem(
       {required this.bookingServiceItemType,
       required this.bookingServiceItemStatus,
       required this.endDateTime,
-      required this.startDateTime});
+      required this.startDateTime,
+      required this.changedPrice});
 
   factory BookingServiceItem.fromJson(Map<String, dynamic> json) {
     return BookingServiceItem(
@@ -164,6 +166,20 @@ class BookingServiceItem {
         endDateTime: json['actualEndDateTime'] == null
             ? null
             : DateTime.parse(json['actualEndDateTime']),
-        startDateTime: DateTime.parse(json['startDateTime']));
+        startDateTime: DateTime.parse(json['startDateTime']),
+        changedPrice: json['chargedPrice'] == null
+            ? null
+            : ChangedPrice.fromJson(json['chargedPrice']));
+  }
+}
+
+class ChangedPrice {
+  final double grandTotal;
+
+  ChangedPrice(this.grandTotal);
+
+  factory ChangedPrice.fromJson(Map<String, dynamic> json) {
+    return ChangedPrice(
+        json['grandTotal'] == null ? 0 : json['grandTotal'].toDouble());
   }
 }

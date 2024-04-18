@@ -373,7 +373,8 @@ class _JobItemWidgetNewState extends State<JobItemWidgetNew> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.only(bottom: 10, top: 10),
+        margin: EdgeInsets.only(bottom: 4, top: 4),
+        padding: EdgeInsets.only(bottom: 4, top: 4),
         decoration: BoxDecoration(
           color: zimkeyWhite,
           borderRadius: BorderRadius.circular(10),

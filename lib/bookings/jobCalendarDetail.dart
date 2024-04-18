@@ -193,8 +193,8 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
               result.data!['getPartnerCalendarItem']);
           // print(object)
           if (item.bookingServiceItem?.bookingServiceItemType?.index == 1) {
-            // refId = result.data!['getPartnerCalendarItem']['bookingServiceItem']
-            //     ['refBookingServiceItem ']['activePartnerCalenderId'];
+            refId = result.data?['getPartnerCalendarItem']['bookingServiceItem']
+                ['refBookingServiceItem']['activePartnerCalenderId'];
           }
 
           return result.isLoading
@@ -1089,14 +1089,14 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                       ),
                                     ),
                                   //Add Additional work------------------
-                                  if (item.bookingServiceItem!
-                                              .bookingService !=
-                                          null &&
+                                  if (item.bookingServiceItem!.bookingService != null &&
                                       item.bookingServiceItem!.bookingService!
                                               .service !=
                                           null &&
                                       jobStatus != 'CLOSED' &&
-                                      !(item.bookingServiceItem?.bookingServiceItemType
+                                      !(item
+                                                  .bookingServiceItem
+                                                  ?.bookingServiceItemType
                                                   ?.index ==
                                               1 &&
                                           item.partnerCalendarStatus ==
@@ -1110,7 +1110,10 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                               .CANCELED_CUSTOMER) &&
                                       item.bookingServiceItem
                                               ?.bookingServiceItemType?.index !=
-                                          1)
+                                          1 &&
+                                      item.bookingServiceItem
+                                              ?.bookingServiceItemType?.index !=
+                                          2)
                                     InkWell(
                                       onTap: () async {
                                         billingOption;
@@ -2086,11 +2089,11 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
           taskStage = 1;
           break;
         }
-      // case 'PAYMENT_PENDING':
-      //   {
-      //     taskStage = 1;
-      //     break;
-      //   }
+      case 'PAYMENT_PENDING':
+        {
+          taskStage = 1;
+          break;
+        }
       case 'IN_PROGRESS':
         {
           taskStage = 2;
@@ -2184,35 +2187,35 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                           fontSize: 15,
                         ),
                       ),
-                      // jobitem.bookingServiceItem?.bookingServiceItemType
-                      //             ?.index ==
-                      //         1
-                      //     ? InkWell(
-                      //         onTap: () {
-                      //           if (refId != null) {
-                      //             Navigator.push(
-                      //               context,
-                      //               MaterialPageRoute(
-                      //                 builder: (context) => JobCalendarDetail(
-                      //                   id: refId!,
-                      //                   // bookingArea: thisArea,
-                      //                   updateTab: widget.updateTab,
-                      //                   // refetchJobs: refetch(),
-                      //                 ),
-                      //               ),
-                      //             );
-                      //           }
-                      //         },
-                      //         child: Text(
-                      //           'Go to main booking',
-                      //           style: TextStyle(
-                      //             color: Colors.blue,
-                      //             fontWeight: FontWeight.bold,
-                      //             fontSize: 15,
-                      //           ),
-                      //         ),
-                      //       )
-                      //     : SizedBox(),
+                      jobitem.bookingServiceItem?.bookingServiceItemType
+                                  ?.index ==
+                              1
+                          ? InkWell(
+                              onTap: () {
+                                if (refId != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => JobCalendarDetail(
+                                        id: refId!,
+                                        // bookingArea: thisArea,
+                                        updateTab: widget.updateTab,
+                                        // refetchJobs: refetch(),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Text(
+                                'Go to main booking',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            )
+                          : SizedBox(),
                     ],
                   ),
                 ),
@@ -2265,7 +2268,19 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                 color: zimkeyOrange.withOpacity(0.6)),
                             child: Text("Rework"),
                           )
-                        : SizedBox()
+                        : SizedBox(),
+                    jobitem.bookingServiceItem?.bookingServiceItemType?.index ==
+                            2
+                        ? Container(
+                            margin: EdgeInsets.only(top: 10),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: zimkeyOrange.withOpacity(0.6)),
+                            child: Text("Additional"),
+                          )
+                        : SizedBox(),
                   ],
                 ),
               ],
@@ -2721,15 +2736,11 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                   Container(
                     width: 10,
                   ),
-                  if (jobitem.booking!.bookingPayments != null &&
-                      jobitem.booking!.bookingPayments!.isNotEmpty &&
-                      jobitem.booking!.bookingPayments!.first.amountPaid !=
-                          null &&
-                      jobitem.booking!.bookingPayments!.first.amountPaid! > 0)
+                  if (jobitem.bookingServiceItem?.changePrice != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 15.0),
                       child: Text(
-                        '₹${jobitem.booking!.bookingPayments!.first.amountPaid}',
+                        '₹${jobitem.bookingServiceItem!.changePrice!.grandTotal.toStringAsFixed(2)}',
                         style: TextStyle(
                           color: zimkeyWhite,
                           fontWeight: FontWeight.bold,
@@ -2799,7 +2810,8 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
           if (jobitem.booking != null &&
               jobitem.booking!.pendingAmount != null &&
               jobitem.booking!.pendingAmount!.amount != null &&
-              jobitem.booking!.pendingAmount!.amount! > 0)
+              jobitem.booking!.pendingAmount!.amount! > 0 &&
+              jobitem.bookingServiceItem?.bookingServiceItemType?.index != 2)
             Container(
               margin: EdgeInsets.only(bottom: 15),
               padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -3105,7 +3117,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
     unit = addons.unit.toString();
     unit = unit.split('.')[1];
     double total = 0;
-    total = (addons.units! * addons.unitPrice!).toDouble();
+    total = (addons.units! * (addons.unitPrice ?? 0)).toDouble();
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
       margin: EdgeInsets.symmetric(vertical: 5),

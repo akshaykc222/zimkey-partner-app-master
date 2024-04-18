@@ -385,6 +385,10 @@ String getCalenerShort = '''
         bookingServiceItemStatus
         actualEndDateTime
         startDateTime
+        chargedPrice {
+            grandTotal
+        }
+
       }
     }
     pageInfo {
@@ -416,6 +420,9 @@ String getPartnerCalendar = '''query getPartnerCalendarItem(\$id:ID!){
 
         bookingServiceItemId  
         bookingServiceItem {
+        chargedPrice {
+            grandTotal
+        }
           bookingServiceId
           refBookingServiceItem {
                 activePartnerCalenderId

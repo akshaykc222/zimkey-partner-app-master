@@ -115,6 +115,7 @@ class _EditProfileState extends State<EditProfile> {
   bool validAadhar = false;
   bool showError = false;
   bool isLoading = false;
+
   bool isEmail(String em) {
     String p =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
@@ -132,6 +133,7 @@ class _EditProfileState extends State<EditProfile> {
   bool filledStreetAddr = false;
   bool filledPostal = false;
   bool filledCity = true;
+
   // bool filledifsc = false;
   // bool filledAcc = false;
   bool filledArea = false;
@@ -376,7 +378,9 @@ class _EditProfileState extends State<EditProfile> {
                           context,
                           PageTransition(
                             type: PageTransitionType.bottomToTop,
-                            child: EditProfilePicPage(),
+                            child: EditProfilePicPage(
+                              fromp: true,
+                            ),
                             duration: Duration(milliseconds: 300),
                           ),
                         );

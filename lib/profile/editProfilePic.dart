@@ -14,7 +14,9 @@ import '../theme.dart';
 import 'editProfile.dart';
 
 class EditProfilePicPage extends StatefulWidget {
-  EditProfilePicPage({Key? key}) : super(key: key);
+  final bool? fromp;
+
+  EditProfilePicPage({Key? key, this.fromp}) : super(key: key);
 
   @override
   State<EditProfilePicPage> createState() => _EditProfilePicPaageState();
@@ -204,24 +206,29 @@ class _EditProfilePicPaageState extends State<EditProfilePicPage> {
                                       fbState.partnerUser.value != null &&
                                       fbState.partnerUser.value!.phone !=
                                           null &&
-                                      fbState
-                                          .partnerUser.value!.phone!.isNotEmpty)
-                                    Text(
-                                      'Not ${fbState.partnerUser.value!.phone} ?',
-                                      style: TextStyle(
-                                        color: zimkeyOrange,
-                                        fontSize: 10,
-                                        // fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  Text(
-                                    'Back To Login',
-                                    style: TextStyle(
-                                      color: zimkeyOrange,
-                                      fontSize: 10,
-                                      // fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                      fbState.partnerUser.value!.phone!
+                                          .isNotEmpty &&
+                                      widget.fromp != true)
+                                    Column(
+                                      children: [
+                                        Text(
+                                          'Not ${fbState.partnerUser.value!.phone} ?',
+                                          style: TextStyle(
+                                            color: zimkeyOrange,
+                                            fontSize: 10,
+                                            // fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Back To Login',
+                                          style: TextStyle(
+                                            color: zimkeyOrange,
+                                            fontSize: 10,
+                                            // fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                 ],
                               ),
                             ),

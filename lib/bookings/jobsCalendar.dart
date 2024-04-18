@@ -1395,6 +1395,16 @@ class _BookingWidgetState extends State<BookingWidget>
                               color: zimkeyOrange.withOpacity(0.6)),
                           child: Text("Rework"),
                         )
+                      : SizedBox(),
+                  jobitem.bookingServiceItem.bookingServiceItemType?.index == 2
+                      ? Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: zimkeyOrange.withOpacity(0.6)),
+                          child: Text("Additional"),
+                        )
                       : SizedBox()
                 ],
               ),
@@ -1409,8 +1419,8 @@ class _BookingWidgetState extends State<BookingWidget>
                   borderRadius: BorderRadius.circular(10),
                   color: zimkeyOrange,
                 ),
-                child: bookingServiceItem(
-                    jobitem.booking.bookingService, jobitem.booking),
+                child: bookingServiceItem(jobitem.booking.bookingService,
+                    jobitem.booking, jobitem.bookingServiceItem.changedPrice),
               ),
             ),
             if (taskStage < 3)
@@ -1479,7 +1489,8 @@ class _BookingWidgetState extends State<BookingWidget>
     );
   }
 
-  Widget bookingServiceItem(c.BookingService bookingServ, c.Booking booking) {
+  Widget bookingServiceItem(c.BookingService bookingServ, c.Booking booking,
+      c.ChangedPrice? changedPrice) {
     String? billingoption;
     List<c.BillingOption> allOptions = bookingServ.service.billingOptions;
     for (c.BillingOption op in allOptions) {
@@ -1535,7 +1546,7 @@ class _BookingWidgetState extends State<BookingWidget>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${bookingServ.service!.name}',
+                        '${bookingServ.service.name}',
                         style: TextStyle(
                           color: zimkeyDarkGrey,
                           fontWeight: FontWeight.bold,
@@ -1566,11 +1577,9 @@ class _BookingWidgetState extends State<BookingWidget>
         Padding(
           padding: const EdgeInsets.only(right: 15.0),
           child: Text(
-            (booking.bookingPayments != null &&
-                    booking.bookingPayments!.isNotEmpty &&
-                    booking.bookingPayments!.first.amountPaid != null)
-                ? '₹${booking.bookingPayments!.first.amountPaid}'
-                : '₹0',
+            changedPrice?.grandTotal != null
+                ? '₹${changedPrice!.grandTotal.toStringAsFixed(2)}'
+                : "₹0",
             style: TextStyle(
               color: zimkeyWhite,
               fontWeight: FontWeight.bold,

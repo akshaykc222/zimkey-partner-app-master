@@ -322,6 +322,17 @@ class BookingServiceInputs {
   }
 }
 
+class ChangePriceDetail {
+  final double grandTotal;
+
+  ChangePriceDetail(this.grandTotal);
+
+  factory ChangePriceDetail.fromJson(Map<String, dynamic> json) {
+    return ChangePriceDetail(
+        json['grandTotal'] == null ? 0 : json['grandTotal'].toDouble());
+  }
+}
+
 class BookingServiceItems {
   String? id;
   String? bookingServiceId;
@@ -344,6 +355,7 @@ class BookingServiceItems {
   bool? canStartJob;
   PendingRescheduleByCustomer? pendingRescheduleByCustomer;
   List<AdditionalWork> additionalWork = [];
+  ChangePriceDetail? changePrice;
 
   BookingServiceItems(
       {this.id,
@@ -360,6 +372,7 @@ class BookingServiceItems {
       this.bookingServiceItemType,
       this.modificationReason,
       this.canCancel,
+      this.changePrice,
       this.canReschedule,
       this.canRework,
       this.canUncommit,
@@ -368,6 +381,9 @@ class BookingServiceItems {
       this.pendingRescheduleByCustomer});
 
   BookingServiceItems.fromJson(Map<String, dynamic> json) {
+    changePrice = json['chargedPrice'] == null
+        ? null
+        : ChangePriceDetail.fromJson(json['chargedPrice']);
     additionalWork = json['additionalWorks'] == null
         ? []
         : List<AdditionalWork>.from(

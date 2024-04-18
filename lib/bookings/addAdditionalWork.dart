@@ -117,6 +117,7 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
     setState(() {
       isLoading = false;
     });
+    print(slotsResult);
     if (slotsResult.hasException) {
       showCustomDialog(
           'Oops!', slotsResult.exception.toString(), context, null);
@@ -298,8 +299,14 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
 
     if (addAddlWorkResult.data != null &&
         addAddlWorkResult.data!['addAdditionalWork'] != null) {
-      showCustomDialog('Done', 'Additional work has been added successfully',
-          context, Dashboard());
+      showCustomDialog(
+          'Done',
+          'Additional work has been added successfully',
+          context,
+          Dashboard(
+            index: 2,
+            tabIndex: 0,
+          ));
       print('Add Additional work success!!!!!');
     }
     return addAddlWorkResult;
@@ -627,6 +634,9 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
                   Center(
                     child: InkWell(
                       onTap: () async {
+                        selectedAddons
+                            .removeWhere((element) => element['units'] == 0);
+                        setState(() {});
                         if (selectedAddons.isNotEmpty || serviceUnit != 0)
                           await addAddWorkMutation(
                               widget.jobtem!.bookingServiceItemId);
@@ -750,16 +760,20 @@ class _AddAdditionalworkState extends State<AddAdditionalwork> {
               children: [
                 InkWell(
                   onTap: () {
-                    if (serviceUnit! > 0)
+                    if (serviceUnit! > 0 && serviceUnit! > minServiceUnit)
                       setState(() {
                         serviceUnit = serviceUnit! - 1;
                       });
                     else
-                      showCustomDialog(
-                          'Oops!',
-                          'The minimum allowed value is $minServiceUnit.',
-                          context,
-                          null);
+                      setState(() {
+                        serviceUnit = 0;
+                      });
+
+                    // showCustomDialog(
+                    //     'Oops!',
+                    //     'The minimum allowed value is $minServiceUnit.',
+                    //     context,
+                    //     null);
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 7, vertical: 7),
@@ -1124,9 +1138,7 @@ class _AddonPickerState extends State<AddonPicker> {
       margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       decoration: BoxDecoration(
-        color: selectedAddon != null && selectedAddon!.id == addon.id
-            ? zimkeyBodyOrange
-            : zimkeyLightGrey,
+        color: zimkeyLightGrey,
         border: Border.all(
           color: selectedAddon != null && selectedAddon!.id == addon.id
               ? zimkeyOrange.withOpacity(0.3)
@@ -1218,12 +1230,43 @@ class _AddonPickerState extends State<AddonPicker> {
                           thisUnit = thisUnit! - 1;
                         });
                       } else {
-                        showCustomDialog(
-                          'Oops!',
-                          'The minimum allowed value is $minUnit.',
-                          context,
-                          null,
-                        );
+                        setState(() {
+                          thisUnit = 0;
+                        });
+                        var thisAddon = {
+                          "addonId": addon.id,
+                          "units": thisUnit!.toDouble(),
+                        };
+                        if (thisUnit != 0) {
+                          if (widget.selectedAddons!.isNotEmpty) {
+                            var items = widget.selectedAddons?.where(
+                                (element) => element['addonId'] == addon.id);
+                            if (items?.isEmpty == true) {
+                              widget.selectedAddons?.add(thisAddon);
+                            } else {
+                              widget.selectedAddons?.removeWhere(
+                                  (element) => element['addonId'] == addon.id);
+                              widget.selectedAddons?.add(thisAddon);
+                            }
+                            setState(() {});
+                          } else {
+                            setState(() {
+                              widget.selectedAddons!.add(thisAddon);
+                              selectedAddon = addon;
+                            });
+                          }
+                        } else {
+                          widget.selectedAddons?.removeWhere(
+                              (element) => element['addonId'] == addon.id);
+                          setState(() {});
+                        }
+
+                        // showCustomDialog(
+                        //   'Oops!',
+                        //   'The minimum allowed value is $minUnit.',
+                        //   context,
+                        //   null,
+                        // );
                       }
                     } else {
                       // Handle the case when thisUnit or minUnit is null
@@ -1256,7 +1299,7 @@ class _AddonPickerState extends State<AddonPicker> {
                 ),
                 InkWell(
                   onTap: () {
-                    if (thisUnit! < maxUnit!)
+                    if (thisUnit! < maxUnit!) {
                       setState(() {
                         var temp = thisUnit! + 1;
                         if (temp < minUnit!) {
@@ -1265,12 +1308,40 @@ class _AddonPickerState extends State<AddonPicker> {
                           thisUnit = temp;
                         }
                       });
-                    else
+                      var thisAddon = {
+                        "addonId": addon.id,
+                        "units": thisUnit!.toDouble(),
+                      };
+                      if (thisUnit != 0) {
+                        if (widget.selectedAddons!.isNotEmpty) {
+                          var items = widget.selectedAddons?.where(
+                              (element) => element['addonId'] == addon.id);
+                          if (items?.isEmpty == true) {
+                            widget.selectedAddons?.add(thisAddon);
+                          } else {
+                            widget.selectedAddons?.removeWhere(
+                                (element) => element['addonId'] == addon.id);
+                            widget.selectedAddons?.add(thisAddon);
+                          }
+                          setState(() {});
+                        } else {
+                          setState(() {
+                            widget.selectedAddons!.add(thisAddon);
+                            selectedAddon = addon;
+                          });
+                        }
+                      } else {
+                        widget.selectedAddons?.removeWhere(
+                            (element) => element['addonId'] == addon.id);
+                        setState(() {});
+                      }
+                    } else {
                       showCustomDialog(
                           'Oops!',
                           'The maximum allowed value is $maxUnit.',
                           context,
                           null);
+                    }
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 7, vertical: 7),
