@@ -1203,170 +1203,268 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                             const SizedBox(
                               height: 10,
                             ),
-                            ListView.builder(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: item
-                                    .bookingServiceItem?.additionalWork.length,
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) => Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: zimkeyLightGrey,
-                                        borderRadius: BorderRadius.circular(7),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 10),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              HelperWidgets.buildText(
-                                                  text: "Status", fontSize: 13),
+                            item.bookingServiceItem?.additionalWork.isEmpty ==
+                                    true
+                                ? const SizedBox()
+                                : Column(
+                                    children: [
+                                      ListView.builder(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          itemCount: item.bookingServiceItem
+                                              ?.additionalWork.length,
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) =>
                                               Container(
-                                                padding:
+                                                margin:
                                                     const EdgeInsets.symmetric(
                                                         horizontal: 5,
-                                                        vertical: 5),
+                                                        vertical: 10),
                                                 decoration: BoxDecoration(
-                                                  color: zimkeyGreen
-                                                      .withOpacity(0.3),
+                                                  color: zimkeyLightGrey,
                                                   borderRadius:
                                                       BorderRadius.circular(7),
                                                 ),
-                                                child: HelperWidgets.buildText(
-                                                  text: item
-                                                          .bookingServiceItem
-                                                          ?.additionalWork[
-                                                              index]
-                                                          .bookingAdditionalWorkStatus ??
-                                                      "",
-                                                  color: zimkeyDarkGrey,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          ListView.builder(
-                                              shrinkWrap: true,
-                                              physics:
-                                                  const NeverScrollableScrollPhysics(),
-                                              itemCount: item
-                                                  .bookingServiceItem
-                                                  ?.additionalWork[index]
-                                                  .bookingAddons
-                                                  .length,
-                                              itemBuilder: (context, i) =>
-                                                  ListTile(
-                                                    title: Text(item
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 15,
+                                                        vertical: 10),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        HelperWidgets.buildText(
+                                                            text: "Status",
+                                                            fontSize: 13),
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 5,
+                                                                  vertical: 5),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: zimkeyGreen
+                                                                .withOpacity(
+                                                                    0.3),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        7),
+                                                          ),
+                                                          child: HelperWidgets
+                                                              .buildText(
+                                                            text: item
+                                                                    .bookingServiceItem
+                                                                    ?.additionalWork[
+                                                                        index]
+                                                                    .bookingAdditionalWorkStatus ??
+                                                                "",
+                                                            color:
+                                                                zimkeyDarkGrey,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    item
+                                                                .bookingServiceItem
+                                                                ?.additionalWork[
+                                                                    index]
+                                                                .bookingAddons
+                                                                .isNotEmpty ==
+                                                            true
+                                                        ? Align(
+                                                            alignment: Alignment
+                                                                .centerLeft,
+                                                            child: HelperWidgets.buildText(
+                                                                text:
+                                                                    "Booking Addons",
+                                                                color:
+                                                                    zimkeyDarkGrey,
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        : SizedBox(),
+                                                    ListView.builder(
+                                                        shrinkWrap: true,
+                                                        physics:
+                                                            const NeverScrollableScrollPhysics(),
+                                                        itemCount: item
                                                             .bookingServiceItem
                                                             ?.additionalWork[
                                                                 index]
-                                                            .bookingAddons[i]
-                                                            .name ??
-                                                        ""),
-                                                    subtitle: Text(
-                                                        "${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].units}  ${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].unit}"),
-                                                    trailing: Text(
-                                                        "₹${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].amount}"),
-                                                  )),
-                                          item
-                                                      .bookingServiceItem
-                                                      ?.additionalWork[index]
-                                                      .bookingAddons
-                                                      .isEmpty ==
-                                                  true
-                                              ? const SizedBox()
-                                              : const SizedBox(
-                                                  height: 5,
-                                                ),
-                                          item
-                                                      .bookingServiceItem
-                                                      ?.additionalWork[index]
-                                                      .modificationReason ==
-                                                  null
-                                              ? const SizedBox()
-                                              : Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    HelperWidgets.buildText(
-                                                        text:
-                                                            "Modification Reason",
-                                                        fontSize: 13),
-                                                    HelperWidgets.buildText(
-                                                      text: item
-                                                              .bookingServiceItem
-                                                              ?.additionalWork[
-                                                                  index]
-                                                              .modificationReason ??
-                                                          "",
-                                                      color: zimkeyDarkGrey,
-                                                      fontSize: 13,
+                                                            .bookingAddons
+                                                            .length,
+                                                        itemBuilder:
+                                                            (context, i) =>
+                                                                ListTile(
+                                                                  title: Text(item
+                                                                          .bookingServiceItem
+                                                                          ?.additionalWork[
+                                                                              index]
+                                                                          .bookingAddons[
+                                                                              i]
+                                                                          .name ??
+                                                                      ""),
+                                                                  subtitle: Text(
+                                                                      "${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].units}  ${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].unit}"),
+                                                                  trailing: Text(
+                                                                      "₹${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].amount.grandTotal}"),
+                                                                )),
+                                                    item
+                                                                .bookingServiceItem
+                                                                ?.additionalWork[
+                                                                    index]
+                                                                .bookingAddons
+                                                                .isEmpty ==
+                                                            true
+                                                        ? const SizedBox()
+                                                        : const SizedBox(
+                                                            height: 5,
+                                                          ),
+                                                    item
+                                                                .bookingServiceItem
+                                                                ?.additionalWork[
+                                                                    index]
+                                                                .modificationReason ==
+                                                            null
+                                                        ? const SizedBox()
+                                                        : Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              HelperWidgets
+                                                                  .buildText(
+                                                                      text:
+                                                                          "Modification Reason",
+                                                                      fontSize:
+                                                                          13),
+                                                              HelperWidgets
+                                                                  .buildText(
+                                                                text: item
+                                                                        .bookingServiceItem
+                                                                        ?.additionalWork[
+                                                                            index]
+                                                                        .modificationReason ??
+                                                                    "",
+                                                                color:
+                                                                    zimkeyDarkGrey,
+                                                                fontSize: 13,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    SizedBox(
+                                                      height: item
+                                                                  .bookingServiceItem
+                                                                  ?.additionalWork[
+                                                                      index]
+                                                                  .modificationReason ==
+                                                              null
+                                                          ? 0
+                                                          : 5,
                                                     ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        HelperWidgets.buildText(
+                                                            text:
+                                                                "Additional Work Hr(s)",
+                                                            fontSize: 13),
+                                                        HelperWidgets.buildText(
+                                                          text: item
+                                                                  .bookingServiceItem
+                                                                  ?.additionalWork[
+                                                                      index]
+                                                                  .additionalHoursUnits
+                                                                  .toString() ??
+                                                              "",
+                                                          color: zimkeyDarkGrey,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        HelperWidgets.buildText(
+                                                            text:
+                                                                "Additional Hr Total",
+                                                            fontSize: 13),
+                                                        HelperWidgets.buildText(
+                                                          text:
+                                                              "₹${item.bookingServiceItem?.additionalWork[index].additionalHoursAmount?.grandTotal?.toStringAsFixed(2) ?? 0}",
+                                                          color: zimkeyDarkGrey,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        HelperWidgets.buildText(
+                                                            text: "Grand Total",
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 5,
+                                                                  vertical: 5),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: zimkeyOrange
+                                                                .withOpacity(
+                                                                    0.3),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        7),
+                                                          ),
+                                                          child: HelperWidgets.buildText(
+                                                              text:
+                                                                  "₹${item.bookingServiceItem?.additionalWork[0].totalAdditionalWork?.grandTotal}" ??
+                                                                      "",
+                                                              color:
+                                                                  zimkeyDarkGrey,
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ],
+                                                    )
                                                   ],
                                                 ),
-                                          SizedBox(
-                                            height: item
-                                                        .bookingServiceItem
-                                                        ?.additionalWork[index]
-                                                        .modificationReason ==
-                                                    null
-                                                ? 0
-                                                : 5,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              HelperWidgets.buildText(
-                                                  text: "Additional Work Hr(s)",
-                                                  fontSize: 13),
-                                              HelperWidgets.buildText(
-                                                text: item
-                                                        .bookingServiceItem
-                                                        ?.additionalWork[index]
-                                                        .additionalHoursUnits
-                                                        .toString() ??
-                                                    "",
-                                                color: zimkeyDarkGrey,
-                                                fontSize: 13,
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              HelperWidgets.buildText(
-                                                  text: "Grand Total",
-                                                  fontSize: 13),
-                                              HelperWidgets.buildText(
-                                                text: item
-                                                        .bookingServiceItem
-                                                        ?.additionalWork[index]
-                                                        .additionalHoursAmount
-                                                        ?.grandTotal
-                                                        ?.toStringAsFixed(2) ??
-                                                    "0.0",
-                                                color: zimkeyDarkGrey,
-                                                fontSize: 13,
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    )),
+                                              )),
+                                    ],
+                                  ),
                             SizedBox(
                               height: 200,
                             ),
@@ -2717,7 +2815,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                   Container(
                                     margin: EdgeInsets.only(top: 3),
                                     child: Text(
-                                      '${thisBookingoption.toUpperCase()}',
+                                      '${jobitem.bookingServiceItem?.unit ?? 0} ${thisBookingoption.toUpperCase()}',
                                       // n$billingQty ${billingUnit.toLowerCase()}',
                                       style: TextStyle(
                                         color: zimkeyDarkGrey.withOpacity(1.0),
@@ -2838,31 +2936,31 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                 ],
               ),
             ),
-          if (jobitem.bookingServiceItem != null &&
-              jobitem.bookingServiceItem!.bookingAddons != null &&
-              jobitem.bookingServiceItem!.bookingAddons!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Booking Addons',
-                    style: TextStyle(
-                      color: zimkeyDarkGrey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  for (BookingAddons addons
-                      in jobitem.bookingServiceItem!.bookingAddons!)
-                    bookingAddonsSection(jobitem, addons),
-                ],
-              ),
-            ),
+          // if (jobitem.bookingServiceItem != null &&
+          //     jobitem.bookingServiceItem!.bookingAddons != null &&
+          //     jobitem.bookingServiceItem!.bookingAddons!.isNotEmpty)
+          //   Padding(
+          //     padding: const EdgeInsets.symmetric(horizontal: 15),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Text(
+          //           'Booking Addons',
+          //           style: TextStyle(
+          //             color: zimkeyDarkGrey,
+          //             fontWeight: FontWeight.bold,
+          //             fontSize: 15,
+          //           ),
+          //         ),
+          //         SizedBox(
+          //           height: 5,
+          //         ),
+          //         for (BookingAddons addons
+          //             in jobitem.bookingServiceItem!.bookingAddons!)
+          //           bookingAddonsSection(jobitem, addons),
+          //       ],
+          //     ),
+          //   ),
           //Booking Comments-----
           if (jobitem.booking!.bookingNote != null &&
               jobitem.booking!.bookingNote!.isNotEmpty &&

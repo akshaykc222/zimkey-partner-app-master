@@ -150,16 +150,19 @@ class BookingServiceItem {
   final DateTime? endDateTime;
   final DateTime? startDateTime;
   final ChangedPrice? changedPrice;
+  final int? unit;
 
   BookingServiceItem(
       {required this.bookingServiceItemType,
       required this.bookingServiceItemStatus,
       required this.endDateTime,
       required this.startDateTime,
-      required this.changedPrice});
+      required this.changedPrice,
+      this.unit});
 
   factory BookingServiceItem.fromJson(Map<String, dynamic> json) {
     return BookingServiceItem(
+        unit: json['units'],
         bookingServiceItemType: EnumToString.fromString(
             BookingServiceItemTypeEnum.values, json['bookingServiceItemType']),
         bookingServiceItemStatus: json['bookingServiceItemStatus'],

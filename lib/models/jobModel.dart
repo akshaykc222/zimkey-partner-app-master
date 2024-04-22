@@ -614,7 +614,20 @@ class Team {
       {"uid": uid, "name": name, "members": members, "id": id};
 }
 
+class TotalAdditionalWork {
+  final double? grandTotal;
+
+  TotalAdditionalWork(this.grandTotal);
+
+  factory TotalAdditionalWork.fromJson(Map<String, dynamic> json) {
+    print("object $json");
+    return TotalAdditionalWork(
+        json['grandTotal'] == null ? 0 : json['grandTotal'].toDouble());
+  }
+}
+
 class AdditionalWork {
+  final TotalAdditionalWork? totalAdditionalWork;
   final String? modificationReason;
   final List<BookingAddon> bookingAddons;
   final int? additionalHoursUnits;
@@ -624,33 +637,39 @@ class AdditionalWork {
   final Amount? additionalHoursAmount;
   final TotalAdditionalWorkAmount? totalAdditionalWorkAmount;
 
-  AdditionalWork({
-    required this.bookingAddons,
-    this.additionalHoursUnits,
-    this.modificationReason,
-    required this.bookingAdditionalWorkStatus,
-    required this.isPaid,
-    this.additionalHoursAmount,
-    this.totalAdditionalWorkAmount,
-  });
+  AdditionalWork(
+      {required this.bookingAddons,
+      this.additionalHoursUnits,
+      this.modificationReason,
+      required this.bookingAdditionalWorkStatus,
+      required this.isPaid,
+      this.additionalHoursAmount,
+      this.totalAdditionalWorkAmount,
+      this.totalAdditionalWork});
 
-  factory AdditionalWork.fromJson(Map<String, dynamic> json) => AdditionalWork(
-        modificationReason: json['modificationReason'],
-        bookingAddons: json["bookingAddons"] == null
-            ? []
-            : List<BookingAddon>.from(
-                json["bookingAddons"]!.map((x) => BookingAddon.fromJson(x))),
-        additionalHoursUnits: json["additionalHoursUnits"] ?? 0,
-        bookingAdditionalWorkStatus: json["bookingAdditionalWorkStatus"],
-        isPaid: json["isPaid"],
-        additionalHoursAmount: json["additionalHoursAmount"] == null
-            ? null
-            : Amount.fromJson(json["additionalHoursAmount"]),
-        totalAdditionalWorkAmount: json["totalAdditionalWorkAmount"] == null
-            ? null
-            : TotalAdditionalWorkAmount.fromJson(
-                json["totalAdditionalWorkAmount"]),
-      );
+  factory AdditionalWork.fromJson(Map<String, dynamic> json) {
+    print("additonal json ${json}");
+    return AdditionalWork(
+      modificationReason: json['modificationReason'],
+      totalAdditionalWork: json['totalAdditionalWorkAmount'] == null
+          ? null
+          : TotalAdditionalWork.fromJson(json['totalAdditionalWorkAmount']),
+      bookingAddons: json["bookingAddons"] == null
+          ? []
+          : List<BookingAddon>.from(
+              json["bookingAddons"]!.map((x) => BookingAddon.fromJson(x))),
+      additionalHoursUnits: json["additionalHoursUnits"] ?? 0,
+      bookingAdditionalWorkStatus: json["bookingAdditionalWorkStatus"],
+      isPaid: json["isPaid"],
+      additionalHoursAmount: json["additionalHoursAmount"] == null
+          ? null
+          : Amount.fromJson(json["additionalHoursAmount"]),
+      totalAdditionalWorkAmount: json["totalAdditionalWorkAmount"] == null
+          ? null
+          : TotalAdditionalWorkAmount.fromJson(
+              json["totalAdditionalWorkAmount"]),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "bookingAddons":

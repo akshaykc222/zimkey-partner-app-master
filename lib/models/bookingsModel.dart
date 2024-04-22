@@ -356,6 +356,7 @@ class BookingServiceItems {
   PendingRescheduleByCustomer? pendingRescheduleByCustomer;
   List<AdditionalWork> additionalWork = [];
   ChangePriceDetail? changePrice;
+  int? unit;
 
   BookingServiceItems(
       {this.id,
@@ -378,9 +379,11 @@ class BookingServiceItems {
       this.canUncommit,
       this.canStartJob,
       this.actualStartDateTime,
+      this.unit,
       this.pendingRescheduleByCustomer});
 
   BookingServiceItems.fromJson(Map<String, dynamic> json) {
+    unit = json['units'];
     changePrice = json['chargedPrice'] == null
         ? null
         : ChangePriceDetail.fromJson(json['chargedPrice']);

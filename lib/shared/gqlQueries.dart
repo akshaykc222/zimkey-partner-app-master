@@ -381,6 +381,7 @@ String getCalenerShort = '''
         }
       }
       bookingServiceItem {
+      units
         bookingServiceItemType
         bookingServiceItemStatus
         actualEndDateTime
@@ -423,6 +424,7 @@ String getPartnerCalendar = '''query getPartnerCalendarItem(\$id:ID!){
         chargedPrice {
             grandTotal
         }
+        units
           bookingServiceId
           refBookingServiceItem {
                 activePartnerCalenderId
@@ -435,6 +437,7 @@ String getPartnerCalendar = '''query getPartnerCalendarItem(\$id:ID!){
           id      
           canReschedule
                  additionalWorks {
+                 
                 modificationReason
                 
                 bookingAdditionalWorkStatus

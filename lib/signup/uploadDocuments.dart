@@ -52,6 +52,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   bool frontAndBack = false;
   String frontDoc = "";
   List<DocOptions> docOptions = [];
+
   Future<String> calculateHash(String filePath) async {
     final file = File(filePath);
     final bytes = await file.readAsBytes();
@@ -67,7 +68,6 @@ class _UploadDocumentsState extends State<UploadDocuments> {
 
   Future getImage(DocOptions? doctype, String? frontOrBack) async {
     if (doctype != null) {
-      firstDocType = doctype.doctype ?? "";
       await Permission.photos.request();
       var permissionStatus = await Permission.photos.status;
       // if (permissionStatus.isGranted || permissionStatus.isLimited) {
@@ -78,6 +78,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
       await picker.pickImage(source: ImageSource.gallery).then((value) async {
         pickedFile = value;
         if (pickedFile != null) {
+          firstDocType = doctype.doctype ?? "";
           if (frontOrBack == "back") {
             final isSameImage =
                 await areFilesIdentical(frontImagePath, value?.path ?? "");
@@ -95,7 +96,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                 if (value!.isNotEmpty) {
                   //success
                   setState(() {
-                    isLoading=false;
+                    isLoading = false;
                     photoId = value;
                     mediaIds.add(photoId);
                     _image = File(pickedFile.path);
@@ -119,7 +120,6 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                     }
                   }
                   //runmutation
-
                 } // } else {
                 //   showCustomDialog(
                 //       'Oops!!', 'Upload Error - Please try again.', context, null);
@@ -133,7 +133,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
               if (value!.isNotEmpty) {
                 //success
                 setState(() {
-                  isLoading=false;
+                  isLoading = false;
                   photoId = value;
                   mediaIds.add(photoId);
                   _image = File(pickedFile.path);
@@ -357,7 +357,8 @@ class _UploadDocumentsState extends State<UploadDocuments> {
               height: 55,
               child: GestureDetector(
                 onTap: () async {
-                  var result = await uploadDocMutation(selectedDocType!.code, mediaIds);
+                  var result =
+                      await uploadDocMutation(selectedDocType!.code, mediaIds);
                   setState(() {
                     isLoading = false;
                   });
@@ -366,7 +367,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                       result.data!['updatePartnerDocument'] != null) {
                     print('success  partner upload!!!!!');
                     for (DocOptions op in docOptions) {
-                      if (op.code ==selectedDocType!.code) {
+                      if (op.code == selectedDocType!.code) {
                         setState(() {
                           op.isUploaded = true;
                           op.mediaId!.add(photoId);
@@ -388,7 +389,6 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                           setState(() {
                             op.isUploaded = false;
                           });
-
                       }
                     }
                     showCustomDialog('Oops!!',

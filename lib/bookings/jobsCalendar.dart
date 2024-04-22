@@ -1029,7 +1029,9 @@ class _BookingWidgetState extends State<BookingWidget>
   void _onRefresh() async {
     // monitor network fetch
     await Future.delayed(Duration(milliseconds: 1000));
+    items.value.clear();
     await refetchlist!();
+    items.notifyListeners();
     // setState(() {});
     // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
@@ -1311,7 +1313,7 @@ class _BookingWidgetState extends State<BookingWidget>
                           ),
                         ),
                         Text(
-                          '${jobitem.booking!.userBookingNumber}',
+                          '${jobitem.booking.userBookingNumber}',
                           style: TextStyle(
                             color: zimkeyDarkGrey.withOpacity(0.8),
                             fontWeight: FontWeight.bold,
@@ -1419,8 +1421,11 @@ class _BookingWidgetState extends State<BookingWidget>
                   borderRadius: BorderRadius.circular(10),
                   color: zimkeyOrange,
                 ),
-                child: bookingServiceItem(jobitem.booking.bookingService,
-                    jobitem.booking, jobitem.bookingServiceItem.changedPrice),
+                child: bookingServiceItem(
+                    jobitem.booking.bookingService,
+                    jobitem.booking,
+                    jobitem.bookingServiceItem.changedPrice,
+                    jobitem.bookingServiceItem?.unit ?? 0),
               ),
             ),
             if (taskStage < 3)
@@ -1490,7 +1495,7 @@ class _BookingWidgetState extends State<BookingWidget>
   }
 
   Widget bookingServiceItem(c.BookingService bookingServ, c.Booking booking,
-      c.ChangedPrice? changedPrice) {
+      c.ChangedPrice? changedPrice, int i) {
     String? billingoption;
     List<c.BillingOption> allOptions = bookingServ.service.billingOptions;
     for (c.BillingOption op in allOptions) {
@@ -1557,7 +1562,7 @@ class _BookingWidgetState extends State<BookingWidget>
                         height: 3,
                       ),
                       Text(
-                        '$billingoption',
+                        '$i $billingoption',
                         style: TextStyle(
                           color: zimkeyDarkGrey.withOpacity(1.0),
                           fontSize: 13,
