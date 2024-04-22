@@ -224,7 +224,7 @@ class _JobBoardState extends State<JobBoardPage> with WidgetsBindingObserver {
                                                                 CircularProgressIndicator(),
                                                           )
                                                         : SizedBox()
-                                                    : JobItemWidgetNew(
+                                                   : JobItemWidgetNew(
                                                         job: data[index],
                                                         callAssignMutation:
                                                             (List<String>?

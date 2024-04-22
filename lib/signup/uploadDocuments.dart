@@ -67,29 +67,67 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   }
 
   Future getImage(DocOptions? doctype, String? frontOrBack) async {
-    if (doctype != null) {
-      await Permission.photos.request();
-      var permissionStatus = await Permission.photos.status;
-      // if (permissionStatus.isGranted || permissionStatus.isLimited) {
-      var pickedFile;
-      setState(() {
-        isLoading = true;
-      });
-      await picker.pickImage(source: ImageSource.gallery).then((value) async {
-        pickedFile = value;
-        if (pickedFile != null) {
-          firstDocType = doctype.doctype ?? "";
-          if (frontOrBack == "back") {
-            final isSameImage =
-                await areFilesIdentical(frontImagePath, value?.path ?? "");
-            print("wokring on back front image $isSameImage");
-            if (isSameImage) {
-              print("showing dialog 12");
-              setState(() {
-                isLoading = false;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Please select another image.")));
+    try {
+      if (doctype != null) {
+        await Permission.photos.request();
+        var permissionStatus = await Permission.photos.status;
+        // if (permissionStatus.isGranted || permissionStatus.isLimited) {
+        var pickedFile;
+        setState(() {
+          isLoading = true;
+        });
+        await picker.pickImage(source: ImageSource.gallery).then((value) async {
+          pickedFile = value;
+          if (pickedFile != null) {
+            firstDocType = doctype.doctype ?? "";
+            if (frontOrBack == "back") {
+              final isSameImage =
+                  await areFilesIdentical(frontImagePath, value?.path ?? "");
+              print("wokring on back front image $isSameImage");
+              if (isSameImage) {
+                print("showing dialog 12");
+                setState(() {
+                  isLoading = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Please select another image.")));
+              } else {
+                uploadImage(pickedFile.path, doctype.code, frontOrBack)
+                    .then((value) async {
+                  if (value!.isNotEmpty) {
+                    //success
+                    setState(() {
+                      isLoading = false;
+                      photoId = value;
+                      mediaIds.add(photoId);
+                      _image = File(pickedFile.path);
+                    });
+                    if (frontOrBack != null) {
+                      if (frontOrBack == "front")
+                        setState(() {
+                          frontDoc = doctype.doctype ?? "";
+                          frontphotoId = photoId;
+                          frontImagePath = pickedFile.path;
+                          selectedDocType!.frontId = frontphotoId;
+                          if (backphotoId != null) {
+                            frontAndBack = true;
+                          }
+                        });
+                      else if (frontOrBack == "back") {
+                        setState(() {
+                          backphotoId = photoId;
+                          selectedDocType!.backId = backphotoId;
+                        });
+                      }
+                    }
+                    //runmutation
+                  } // } else {
+                  //   showCustomDialog(
+                  //       'Oops!!', 'Upload Error - Please try again.', context, null);
+                  // }
+                });
+                print("showing dialog");
+              }
             } else {
               uploadImage(pickedFile.path, doctype.code, frontOrBack)
                   .then((value) async {
@@ -104,13 +142,9 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                   if (frontOrBack != null) {
                     if (frontOrBack == "front")
                       setState(() {
-                        frontDoc = doctype.doctype ?? "";
                         frontphotoId = photoId;
                         frontImagePath = pickedFile.path;
                         selectedDocType!.frontId = frontphotoId;
-                        if (backphotoId != null) {
-                          frontAndBack = true;
-                        }
                       });
                     else if (frontOrBack == "back") {
                       setState(() {
@@ -120,108 +154,79 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                     }
                   }
                   //runmutation
+                  // var result = await uploadDocMutation(doctype.code, mediaIds);
+                  // setState(() {
+                  //   isLoading = false;
+                  // });
+                  // if (result != null &&
+                  //     result.data != null &&
+                  //     result.data!['updatePartnerDocument'] != null) {
+                  //   print('success  partner upload!!!!!');
+                  //   for (DocOptions op in docOptions) {
+                  //     if (op.code == doctype.code) {
+                  //       setState(() {
+                  //         op.isUploaded = true;
+                  //         op.mediaId!.add(photoId);
+                  //       });
+                  //     }
+                  //   }
+                  // } else {
+                  //   setState(() {
+                  //     _image = null;
+                  //     photoId = null;
+                  //   });
+                  //   for (DocOptions op in docOptions) {
+                  //     if (op.code == doctype.code) {
+                  //       setState(() {
+                  //         op.mediaId!
+                  //             .removeWhere((element) => element == photoId);
+                  //       });
+                  //       if (op.mediaId == null || op.mediaId!.isEmpty)
+                  //         setState(() {
+                  //           op.isUploaded = false;
+                  //         });
+                  //       if (frontOrBack != null && frontOrBack == "front")
+                  //         setState(() {
+                  //           frontphotoId = null;
+                  //           op.frontId = null;
+                  //         });
+                  //       else if (frontOrBack != null && frontOrBack == "back")
+                  //         setState(() {
+                  //           backphotoId = null;
+                  //           op.backId = null;
+                  //         });
+                  //     }
+                  //   }
+                  //   showCustomDialog('Oops!!', 'Upload Error - Please try again.',
+                  //       context, null);
+                  // }
                 } // } else {
                 //   showCustomDialog(
                 //       'Oops!!', 'Upload Error - Please try again.', context, null);
                 // }
               });
-              print("showing dialog");
             }
           } else {
-            uploadImage(pickedFile.path, doctype.code, frontOrBack)
-                .then((value) async {
-              if (value!.isNotEmpty) {
-                //success
-                setState(() {
-                  isLoading = false;
-                  photoId = value;
-                  mediaIds.add(photoId);
-                  _image = File(pickedFile.path);
-                });
-                if (frontOrBack != null) {
-                  if (frontOrBack == "front")
-                    setState(() {
-                      frontphotoId = photoId;
-                      frontImagePath = pickedFile.path;
-                      selectedDocType!.frontId = frontphotoId;
-                    });
-                  else if (frontOrBack == "back") {
-                    setState(() {
-                      backphotoId = photoId;
-                      selectedDocType!.backId = backphotoId;
-                    });
-                  }
-                }
-                //runmutation
-                // var result = await uploadDocMutation(doctype.code, mediaIds);
-                // setState(() {
-                //   isLoading = false;
-                // });
-                // if (result != null &&
-                //     result.data != null &&
-                //     result.data!['updatePartnerDocument'] != null) {
-                //   print('success  partner upload!!!!!');
-                //   for (DocOptions op in docOptions) {
-                //     if (op.code == doctype.code) {
-                //       setState(() {
-                //         op.isUploaded = true;
-                //         op.mediaId!.add(photoId);
-                //       });
-                //     }
-                //   }
-                // } else {
-                //   setState(() {
-                //     _image = null;
-                //     photoId = null;
-                //   });
-                //   for (DocOptions op in docOptions) {
-                //     if (op.code == doctype.code) {
-                //       setState(() {
-                //         op.mediaId!
-                //             .removeWhere((element) => element == photoId);
-                //       });
-                //       if (op.mediaId == null || op.mediaId!.isEmpty)
-                //         setState(() {
-                //           op.isUploaded = false;
-                //         });
-                //       if (frontOrBack != null && frontOrBack == "front")
-                //         setState(() {
-                //           frontphotoId = null;
-                //           op.frontId = null;
-                //         });
-                //       else if (frontOrBack != null && frontOrBack == "back")
-                //         setState(() {
-                //           backphotoId = null;
-                //           op.backId = null;
-                //         });
-                //     }
-                //   }
-                //   showCustomDialog('Oops!!', 'Upload Error - Please try again.',
-                //       context, null);
-                // }
-              } // } else {
-              //   showCustomDialog(
-              //       'Oops!!', 'Upload Error - Please try again.', context, null);
-              // }
+            setState(() {
+              isLoading = false;
             });
+            showCustomDialog('Oops!!', 'Image selection error!', context, null);
           }
-        } else {
+        }).catchError((onError) {
           setState(() {
             isLoading = false;
           });
-          showCustomDialog('Oops!!', 'Image selection error!', context, null);
-        }
-      }).catchError((onError) {
+          print('Error upload ......> $onError');
+        });
+      } else {
         setState(() {
           isLoading = false;
         });
-        print('Error upload ......> $onError');
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      showCustomDialog('Oops!!', 'Select a document type', context, null);
+        showCustomDialog('Oops!!', 'Select a document type', context, null);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 

@@ -1449,7 +1449,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
                                                           ),
                                                           child: HelperWidgets.buildText(
                                                               text:
-                                                                  "₹${item.bookingServiceItem?.additionalWork[0].totalAdditionalWork?.grandTotal}" ??
+                                                                  "₹${item.bookingServiceItem?.additionalWork[index].totalAdditionalWork?.grandTotal}" ??
                                                                       "",
                                                               color:
                                                                   zimkeyDarkGrey,
