@@ -15,166 +15,166 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.7+9
+version: 1.0.8+10
 
 environment:
-    sdk: ">=3.1.3 <4.0.0"
+  sdk: ">=3.1.3 <4.0.0"
 
 dependencies:
-    flutter:
-        sdk: flutter
+  flutter:
+    sdk: flutter
 
-    # The following adds the Cupertino Icons font to your application.
-    # Use with the CupertinoIcons class for iOS style icons.
-    cupertino_icons: ^1.0.6
-    flutter_svg: ^2.0.9
-    intl: any
-    date_time_picker: any
-    country_code_picker: ^3.0.0
-    pin_code_fields: ^8.0.1
-    flutter_device_type: ^0.4.0
-    flutter_launcher_icons: ^0.13.1
-    get: ^4.6.6
-    firebase_core: ^2.22.0
-    firebase_auth: ^4.14.0
-    path_provider: ^2.1.1
-    graphql_flutter: ^5.1.2
-    shared_preferences: ^2.0.4
-    auto_size_text: ^3.0.0
-    page_transition: ^2.1.0
-    url_launcher: ^6.2.1
-    share: ^2.0.1
-    smooth_page_indicator: ^1.1.0
-    image_picker: ^1.0.4
-    permission_handler: ^11.0.1
-    dio: ^5.4.1
-    recase: ^4.1.0
-    timeline_tile: ^2.0.0
-    enum_to_string: ^2.0.1
-    date_format: ^2.0.7
-    mask_text_input_formatter: ^2.5.0
-    lottie: ^3.1.0
-    firebase_messaging: ^14.7.4
-    device_info_plus: ^9.1.0
-    app_settings: ^5.1.1
-    package_info_plus: ^5.0.1
-    easy_mask: ^2.0.1
-    sentry_flutter: ^7.12.0
-    instant: ^0.5.1
-    expandable_page_view: ^1.0.17
-    pull_to_refresh: ^2.0.0
-    keyboard_actions: ^4.2.0
-    fluttertoast: ^8.2.4
-    get_storage: ^2.1.1
-    webview_flutter: ^4.4.2
-    equatable: ^2.0.5
-    flutter_html:
-    flutter_local_notifications: ^17.0.0
-    crypto: ^3.0.3
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
+  intl: any
+  date_time_picker: any
+  country_code_picker: ^3.0.0
+  pin_code_fields: ^8.0.1
+  flutter_device_type: ^0.4.0
+  flutter_launcher_icons: ^0.13.1
+  get: ^4.6.6
+  firebase_core: ^2.22.0
+  firebase_auth: ^4.14.0
+  path_provider: ^2.1.1
+  graphql_flutter: ^5.1.2
+  shared_preferences: ^2.0.4
+  auto_size_text: ^3.0.0
+  page_transition: ^2.1.0
+  url_launcher: ^6.2.1
+  share: ^2.0.1
+  smooth_page_indicator: ^1.1.0
+  image_picker: ^1.0.4
+  permission_handler: ^11.0.1
+  dio: ^5.4.1
+  recase: ^4.1.0
+  timeline_tile: ^2.0.0
+  enum_to_string: ^2.0.1
+  date_format: ^2.0.7
+  mask_text_input_formatter: ^2.5.0
+  lottie: ^3.1.0
+  firebase_messaging: ^14.7.4
+  device_info_plus: ^9.1.0
+  app_settings: ^5.1.1
+  package_info_plus: ^5.0.1
+  easy_mask: ^2.0.1
+  sentry_flutter: ^7.12.0
+  instant: ^0.5.1
+  expandable_page_view: ^1.0.17
+  pull_to_refresh: ^2.0.0
+  keyboard_actions: ^4.2.0
+  fluttertoast: ^8.2.4
+  get_storage: ^2.1.1
+  webview_flutter: ^4.4.2
+  equatable: ^2.0.5
+  flutter_html:
+  flutter_local_notifications: ^17.0.0
+  crypto: ^3.0.3
 
 flutter_icons:
-    android: "launcher_icon"
-    ios: true
-    image_path: "assets/icon/icon.png"
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
 
 dev_dependencies:
-    flutter_test:
-        sdk: flutter
+  flutter_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
 flutter:
-    # The following line ensures that the Material Icons font is
-    # included with your application, so that you can use the icons in
-    # the material Icons class.
-    uses-material-design: true
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
 
-    # To add assets to your application, add an assets section, like this:
-    assets:
-        - assets/images/icons/search.svg
-        - assets/images/icons/rupee.svg
-        - assets/images/icons/postal.svg
-        - assets/images/icons/indiaFlag.svg
-        - assets/images/graphics/logo_without.svg
-        - assets/images/icons/newIcons/aadhar.svg
-        - assets/images/icons/newIcons/account.svg
-        - assets/images/icons/newIcons/areas.svg
-        - assets/images/icons/newIcons/email.svg
-        - assets/images/icons/newIcons/city.svg
-        - assets/images/icons/newIcons/house.svg
-        - assets/images/icons/newIcons/ifsc.svg
-        - assets/images/icons/newIcons/locality.svg
-        - assets/images/icons/newIcons/name.svg
-        - assets/images/icons/newIcons/tick-circle.svg
-        - assets/images/icons/newIcons/logoNoFill.svg
-        - assets/images/icons/newIcons/bookings.svg
-        - assets/images/icons/newIcons/profile.svg
-        - assets/images/icons/newIcons/cancelled.svg
-        - assets/images/icons/newIcons/completed.svg
-        - assets/images/icons/newIcons/rework.svg
-        - assets/images/icons/newIcons/pending.svg
-        - assets/images/icons/newIcons/empty-wallet.svg
-        - assets/images/icons/newIcons/support.svg
-        - assets/images/icons/newIcons/terms.svg
-        - assets/images/icons/newIcons/privacy.svg
-        - assets/images/icons/newIcons/safety.svg
-        - assets/images/icons/newIcons/informationProfile.svg
-        - assets/images/icons/newIcons/starFilled.svg
-        - assets/images/icons/newIcons/star.svg
-        - assets/images/icons/newIcons/information.svg
-        - assets/images/icons/newIcons/logo.svg
-        - assets/images/icons/newIcons/pan.svg
-        - assets/images/icons/newIcons/aadharIcon.svg
-        - assets/images/icons/newIcons/license.svg
-        - assets/images/icons/newIcons/passport.svg
-        - assets/images/icons/newIcons/voterID.svg
-        - assets/images/icons/newIcons/gallery-add.svg
-        - assets/images/icons/newIcons/gallery-tick.svg
-        - assets/images/icons/newIcons/add.svg
-        - assets/images/icons/newIcons/minus.svg
-        - assets/images/icons/newIcons/landmark.svg
-        - assets/images/icons/newIcons/user.svg
-        - assets/images/icons/newIcons/jobCalendar.svg
-        - assets/images/icons/newIcons/calendar.svg
-        - assets/images/icons/img_icon.svg
-        - assets/images/icons/newIcons/company.svg
-        - assets/images/graphics/zimkeyLogo.svg
-        - assets/icon/
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/images/icons/search.svg
+    - assets/images/icons/rupee.svg
+    - assets/images/icons/postal.svg
+    - assets/images/icons/indiaFlag.svg
+    - assets/images/graphics/logo_without.svg
+    - assets/images/icons/newIcons/aadhar.svg
+    - assets/images/icons/newIcons/account.svg
+    - assets/images/icons/newIcons/areas.svg
+    - assets/images/icons/newIcons/email.svg
+    - assets/images/icons/newIcons/city.svg
+    - assets/images/icons/newIcons/house.svg
+    - assets/images/icons/newIcons/ifsc.svg
+    - assets/images/icons/newIcons/locality.svg
+    - assets/images/icons/newIcons/name.svg
+    - assets/images/icons/newIcons/tick-circle.svg
+    - assets/images/icons/newIcons/logoNoFill.svg
+    - assets/images/icons/newIcons/bookings.svg
+    - assets/images/icons/newIcons/profile.svg
+    - assets/images/icons/newIcons/cancelled.svg
+    - assets/images/icons/newIcons/completed.svg
+    - assets/images/icons/newIcons/rework.svg
+    - assets/images/icons/newIcons/pending.svg
+    - assets/images/icons/newIcons/empty-wallet.svg
+    - assets/images/icons/newIcons/support.svg
+    - assets/images/icons/newIcons/terms.svg
+    - assets/images/icons/newIcons/privacy.svg
+    - assets/images/icons/newIcons/safety.svg
+    - assets/images/icons/newIcons/informationProfile.svg
+    - assets/images/icons/newIcons/starFilled.svg
+    - assets/images/icons/newIcons/star.svg
+    - assets/images/icons/newIcons/information.svg
+    - assets/images/icons/newIcons/logo.svg
+    - assets/images/icons/newIcons/pan.svg
+    - assets/images/icons/newIcons/aadharIcon.svg
+    - assets/images/icons/newIcons/license.svg
+    - assets/images/icons/newIcons/passport.svg
+    - assets/images/icons/newIcons/voterID.svg
+    - assets/images/icons/newIcons/gallery-add.svg
+    - assets/images/icons/newIcons/gallery-tick.svg
+    - assets/images/icons/newIcons/add.svg
+    - assets/images/icons/newIcons/minus.svg
+    - assets/images/icons/newIcons/landmark.svg
+    - assets/images/icons/newIcons/user.svg
+    - assets/images/icons/newIcons/jobCalendar.svg
+    - assets/images/icons/newIcons/calendar.svg
+    - assets/images/icons/img_icon.svg
+    - assets/images/icons/newIcons/company.svg
+    - assets/images/graphics/zimkeyLogo.svg
+    - assets/icon/
 
-    # An image asset can refer to one or more resolution-specific "variants", see
-    # https://flutter.dev/assets-and-images/#resolution-aware.
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware.
 
-    # For details regarding adding assets from package dependencies, see
-    # https://flutter.dev/assets-and-images/#from-packages
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
 
-    # To add custom fonts to your application, add a fonts section here,
-    # in this "flutter" section. Each entry in this list should have a
-    # "family" key with the font family name, and a "fonts" key with a
-    # list giving the asset and other descriptors for the font. For
-    # example:
-    fonts:
-        - family: Inter
-          fonts:
-              - asset: assets/fonts/Inter-Regular.ttf
-              - asset: assets/fonts/Inter-Bold.ttf
-                weight: 700
-              - asset: assets/fonts/Inter-Bold.ttf
-                weight: 500
-              - asset: assets/fonts/Inter-Bold.ttf
-                weight: 400
-              - asset: assets/fonts/Inter-Regular.ttf
-                weight: 300
-              - asset: assets/fonts/Inter-Light.ttf
-                weight: 200
-              - asset: assets/fonts/Inter-Light.ttf
-                weight: 100
-    #   - family: Trajan Pro
-    #     fonts:
-    #       - asset: fonts/TrajanPro.ttf
-    #       - asset: fonts/TrajanPro_Bold.ttf
-    #         weight: 700
-    #
-    # For details regarding fonts from package dependencies,
-    # see https://flutter.dev/custom-fonts/#from-packages
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 300
+        - asset: assets/fonts/Inter-Light.ttf
+          weight: 200
+        - asset: assets/fonts/Inter-Light.ttf
+          weight: 100
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
