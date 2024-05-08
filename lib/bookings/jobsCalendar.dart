@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:instant/instant.dart' as ins;
 import 'package:instant/instant.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -1188,24 +1187,21 @@ class _BookingWidgetState extends State<BookingWidget>
   Widget jobListItem(
     c.PartnerCalendarItemNew jobitem,
   ) {
+    DateTime servDateTime = jobitem.serviceDate;
     String endHr;
     String endMin;
-    DateTime serviceDate = jobitem.serviceDate!;
-    serviceDate = dateTimeToZone(zone: "IST", datetime: serviceDate);
-    String hr = serviceDate.hour.toString();
+    String hr = servDateTime.hour.toString();
     if (hr.length < 2) hr = '0$hr';
-    String min = serviceDate.minute.toString();
+    String min = servDateTime.minute.toString();
     if (min.length < 2) min = '0$min';
     endMin = min;
-    endHr = '${serviceDate.hour + 1}';
+    endHr = '${servDateTime.hour + 1}';
     if (endHr.toString().length < 2) endHr = '0$endHr';
-//get areaname
     String? thisArea;
-    DateTime servDateTime =
-        ins.dateTimeToZone(zone: "IST", datetime: jobitem.serviceDate);
+    thisArea = jobitem.booking.bookingAddress.area.name;
     /////
     int taskStage = 0;
-    String bookingStatus = jobitem.booking!.bookingStatus!;
+    String bookingStatus = jobitem.booking!.bookingStatus;
     if (bookingStatus.contains('_')) bookingStatus.replaceAll('_', ' ');
     bookingStatus = ReCase(bookingStatus).titleCase;
     /////
@@ -1377,10 +1373,7 @@ class _BookingWidgetState extends State<BookingWidget>
                 children: [
                   Expanded(
                     child: Text(
-                      DateFormat('dd-MM-yyyy HH:mm').format(
-                          jobStatus == "CLOSED"
-                              ? jobitem.bookingServiceItem.endDateTime!
-                              : servDateTime),
+                      "${DateFormat('dd-MM-yyyy').format(jobStatus == "CLOSED" ? jobitem.bookingServiceItem.endDateTime! : jobitem.serviceDate)} $hr:$min - $endHr:$endMin",
                       style: TextStyle(
                         color: zimkeyDarkGrey.withOpacity(1.0),
                         // fontWeight: FontWeight.bold,

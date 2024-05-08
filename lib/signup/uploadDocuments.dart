@@ -43,6 +43,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
   FormData? formData;
   String? fileName;
   DocOptions? selectedDocType;
+  DocOptions? selectedDocTypeTemp;
   List<String?> mediaIds = [];
   String frontImagePath = "";
   bool isLoading = false;
@@ -105,6 +106,9 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                     if (frontOrBack != null) {
                       if (frontOrBack == "front")
                         setState(() {
+                          if (!(selectedDocType?.backSide == true)) {
+                            selectedDocType?.isUploaded = true;
+                          }
                           frontDoc = doctype.doctype ?? "";
                           frontphotoId = photoId;
                           frontImagePath = pickedFile.path;
@@ -115,6 +119,11 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                         });
                       else if (frontOrBack == "back") {
                         setState(() {
+                          if (selectedDocType?.frontId != null ||
+                              selectedDocType?.frontId != "") {
+                            selectedDocType?.isUploaded = true;
+                          }
+
                           backphotoId = photoId;
                           selectedDocType!.backId = backphotoId;
                         });
@@ -142,12 +151,19 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                   if (frontOrBack != null) {
                     if (frontOrBack == "front")
                       setState(() {
+                        if (!(selectedDocType?.backSide == true)) {
+                          selectedDocType?.isUploaded = true;
+                        }
                         frontphotoId = photoId;
                         frontImagePath = pickedFile.path;
                         selectedDocType!.frontId = frontphotoId;
                       });
                     else if (frontOrBack == "back") {
                       setState(() {
+                        if (selectedDocType?.frontId != null ||
+                            selectedDocType?.frontId != "") {
+                          selectedDocType?.isUploaded = true;
+                        }
                         backphotoId = photoId;
                         selectedDocType!.backId = backphotoId;
                       });
@@ -277,7 +293,8 @@ class _UploadDocumentsState extends State<UploadDocuments> {
         code: DocumentTypeEnum.AADHAR,
         isUploaded: false,
         isTile: true,
-        mediaId: []));
+        mediaId: [],
+        backSide: true));
 
     docOptions.add(DocOptions(
         doctype: 'PAN Card',
@@ -361,179 +378,212 @@ class _UploadDocumentsState extends State<UploadDocuments> {
             bottomNavigationBar: SizedBox(
               height: 55,
               child: GestureDetector(
-                onTap: () async {
-                  var result =
-                      await uploadDocMutation(selectedDocType!.code, mediaIds);
-                  setState(() {
-                    isLoading = false;
-                  });
-                  if (result != null &&
-                      result.data != null &&
-                      result.data!['updatePartnerDocument'] != null) {
-                    print('success  partner upload!!!!!');
-                    for (DocOptions op in docOptions) {
-                      if (op.code == selectedDocType!.code) {
+                onTap: isLoading
+                    ? null
+                    : () async {
                         setState(() {
-                          op.isUploaded = true;
-                          op.mediaId!.add(photoId);
+                          isLoading = true;
                         });
-                      }
-                    }
-                  } else {
-                    setState(() {
-                      _image = null;
-                      photoId = null;
-                    });
-                    for (DocOptions op in docOptions) {
-                      if (op.code == selectedDocType!.code) {
+                        var result = await uploadDocMutation(
+                            selectedDocTypeTemp!.code, mediaIds);
                         setState(() {
-                          op.mediaId!
-                              .removeWhere((element) => element == photoId);
+                          isLoading = false;
                         });
-                        if (op.mediaId == null || op.mediaId!.isEmpty)
-                          setState(() {
-                            op.isUploaded = false;
-                          });
-                      }
-                    }
-                    showCustomDialog('Oops!!',
-                        'Upload Error - Please try again.', context, null);
-                  }
-                  for (DocOptions options in docOptions) {
-                    if (options.isUploaded != null && options.isUploaded!)
-                      for (String? ids in options.mediaId!) {
-                        mediaIds.add(ids);
-                      }
-                  }
-                  if (mediaIds != null && mediaIds.isNotEmpty) {
-                    for (DocOptions op in docOptions) {
-                      if (op.doctype!.toLowerCase() == 'aadhar' &&
-                          op.isUploaded == true)
-                        setState(() {
-                          aadharUplaoded = true;
-                        });
-                    }
-                    // if (!aadharUplaoded)
-                    //   showCustomDialog('Oops!',
-                    //       'Aadhar card copy must be uploaded.', context, null);
-                    // else {
-                    PartnerUser partnerUser;
-                    List<PartnerPendingTaskEnum?>? partnerProgressStage = [];
-                    var userResult = await getUserOnly();
-                    if (userResult != null &&
-                        userResult.data != null &&
-                        userResult.data!['me'] != null) {
-                      print('logged in user ');
-                      partnerUser =
-                          PartnerUser.fromJson(userResult.data!['me']);
-                      fbState.setPartnerUser(partnerUser);
-                      fbState.setIsRegistered(
-                          partnerUser.isPartnerRegistered.toString());
-                      if (partnerUser != null &&
-                          partnerUser.isPartnerRegistered!) {
-                        if (partnerUser.userType!.toLowerCase() != "customer" &&
-                            partnerUser.partnerDetails != null) {
-                          //Check Partner progress
-                          partnerProgressStage.clear();
-                          if (partnerUser.partnerDetails != null &&
-                              partnerUser.partnerDetails!.pendingTasks !=
-                                  null &&
-                              partnerUser
-                                  .partnerDetails!.pendingTasks!.isNotEmpty) {
-                            print("somtthing related");
-                            partnerProgressStage =
-                                partnerUser.partnerDetails!.pendingTasks;
-                            fbState.setPartnerProgress(partnerProgressStage!);
-                            String stage = partnerProgressStage[0].toString();
-                            print(stage);
-                            if (stage.contains('.'))
-                              stage = stage.split('.')[1];
-                            switch (stage) {
-                              case 'UPLOAD_PROFILE_PICTURE':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: UploadProfilePic(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'UPLOAD_DOCUMENT':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: UploadDocuments(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'SELECT_SERVICE':
-                                {
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: SetUpServiceList(),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
-                              case 'SELECT_AREA':
-                                {
-                                  await getAreasQuery();
-                                  Navigator.push(
-                                      context,
-                                      PageTransition(
-                                        type: PageTransitionType.rightToLeft,
-                                        child: SelectSearcableAreas(
-                                          fbState: fbState,
-                                        ),
-                                        duration: Duration(milliseconds: 400),
-                                      ));
-                                  break;
-                                }
+                        if (result.data != null &&
+                            result.data!['updatePartnerDocument'] != null) {
+                          print('success  partner upload!!!!!');
+                          for (DocOptions op in docOptions) {
+                            if (op.code == selectedDocTypeTemp!.code) {
+                              setState(() {
+                                op.isUploaded = true;
+                                op.mediaId!.add(photoId);
+                              });
                             }
-                          } else {
-                            print("else wokring");
-                            sugnupConfirmationDialog('Thank You!',
-                                'We have recievd your registration request. You will be contacted shortly.');
                           }
                         } else {
-                          Navigator.push(
+                          setState(() {
+                            _image = null;
+                            photoId = null;
+                          });
+                          for (DocOptions op in docOptions) {
+                            if (op.code == selectedDocTypeTemp!.code) {
+                              setState(() {
+                                op.mediaId!.removeWhere(
+                                    (element) => element == photoId);
+                              });
+                              if (op.mediaId == null || op.mediaId!.isEmpty)
+                                setState(() {
+                                  op.isUploaded = false;
+                                });
+                            }
+                          }
+                          showCustomDialog(
+                              'Oops!!',
+                              'Upload Error - Please try again.',
                               context,
-                              PageTransition(
-                                type: PageTransitionType.rightToLeft,
-                                child: SignUpDetails(
-                                  fbstate: fbState,
-                                ),
-                                duration: Duration(milliseconds: 400),
-                              ));
+                              null);
                         }
-                      } else {
-                        Navigator.push(
-                            context,
-                            PageTransition(
-                              type: PageTransitionType.rightToLeft,
-                              child: SignUpDetails(
-                                fbstate: fbState,
-                              ),
-                              duration: Duration(milliseconds: 400),
-                            ));
-                      }
-                    }
-                    // }
-                  } else {
-                    showCustomDialog(
-                        'Oops!',
-                        "Kindly upload atleast one document for verification.",
-                        context,
-                        null);
-                  }
-                },
+                        for (DocOptions options in docOptions) {
+                          if (options.isUploaded != null && options.isUploaded!)
+                            for (String? ids in options.mediaId!) {
+                              mediaIds.add(ids);
+                            }
+                        }
+                        if (mediaIds != null && mediaIds.isNotEmpty) {
+                          for (DocOptions op in docOptions) {
+                            if (op.doctype!.toLowerCase() == 'aadhar' &&
+                                op.isUploaded == true)
+                              setState(() {
+                                aadharUplaoded = true;
+                              });
+                          }
+                          // if (!aadharUplaoded)
+                          //   showCustomDialog('Oops!',
+                          //       'Aadhar card copy must be uploaded.', context, null);
+                          // else {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          PartnerUser partnerUser;
+                          List<PartnerPendingTaskEnum?>? partnerProgressStage =
+                              [];
+                          var userResult = await getUserOnly();
+                          if (userResult.data != null &&
+                              userResult.data!['me'] != null) {
+                            print('logged in user ');
+                            partnerUser =
+                                PartnerUser.fromJson(userResult.data!['me']);
+                            fbState.setPartnerUser(partnerUser);
+                            fbState.setIsRegistered(
+                                partnerUser.isPartnerRegistered.toString());
+                            if (partnerUser != null &&
+                                partnerUser.isPartnerRegistered!) {
+                              if (partnerUser.userType!.toLowerCase() !=
+                                      "customer" &&
+                                  partnerUser.partnerDetails != null) {
+                                //Check Partner progress
+                                partnerProgressStage.clear();
+                                if (partnerUser.partnerDetails != null &&
+                                    partnerUser.partnerDetails!.pendingTasks !=
+                                        null &&
+                                    partnerUser.partnerDetails!.pendingTasks!
+                                        .isNotEmpty) {
+                                  print("somtthing related");
+                                  partnerProgressStage =
+                                      partnerUser.partnerDetails!.pendingTasks;
+                                  fbState.setPartnerProgress(
+                                      partnerProgressStage!);
+                                  String stage =
+                                      partnerProgressStage[0].toString();
+                                  print(stage);
+                                  if (stage.contains('.'))
+                                    stage = stage.split('.')[1];
+                                  switch (stage) {
+                                    case 'UPLOAD_PROFILE_PICTURE':
+                                      {
+                                        Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: UploadProfilePic(),
+                                              duration:
+                                                  Duration(milliseconds: 400),
+                                            ));
+                                        break;
+                                      }
+                                    case 'UPLOAD_DOCUMENT':
+                                      {
+                                        Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: UploadDocuments(),
+                                              duration:
+                                                  Duration(milliseconds: 400),
+                                            ));
+                                        break;
+                                      }
+                                    case 'SELECT_SERVICE':
+                                      {
+                                        Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: SetUpServiceList(),
+                                              duration:
+                                                  Duration(milliseconds: 400),
+                                            ));
+                                        break;
+                                      }
+                                    case 'SELECT_AREA':
+                                      {
+                                        await getAreasQuery();
+                                        Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: SelectSearcableAreas(
+                                                fbState: fbState,
+                                              ),
+                                              duration:
+                                                  Duration(milliseconds: 400),
+                                            ));
+                                        break;
+                                      }
+                                  }
+                                } else {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  print("else wokring");
+                                  sugnupConfirmationDialog('Thank You!',
+                                      'We have recievd your registration request. You will be contacted shortly.');
+                                }
+                              } else {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                      type: PageTransitionType.rightToLeft,
+                                      child: SignUpDetails(
+                                        fbstate: fbState,
+                                      ),
+                                      duration: Duration(milliseconds: 400),
+                                    ));
+                              }
+                            } else {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Navigator.push(
+                                  context,
+                                  PageTransition(
+                                    type: PageTransitionType.rightToLeft,
+                                    child: SignUpDetails(
+                                      fbstate: fbState,
+                                    ),
+                                    duration: Duration(milliseconds: 400),
+                                  ));
+                            }
+                          }
+                          // }
+                        } else {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          showCustomDialog(
+                              'Oops!',
+                              "Kindly upload atleast one document for verification.",
+                              context,
+                              null);
+                        }
+                      },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 50),
                   alignment: Alignment.center,
@@ -730,6 +780,7 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                                       onTap: () {
                                         setState(() {
                                           selectedDocType = options;
+                                          selectedDocTypeTemp = options;
                                         });
                                       },
                                       child: Container(
@@ -833,23 +884,26 @@ class _UploadDocumentsState extends State<UploadDocuments> {
                               SizedBox(
                                 width: 20,
                               ),
-                              InkWell(
-                                onTap: () {
-                                  if (firstDocType != "" &&
-                                      firstDocType ==
-                                          selectedDocType?.doctype) {
-                                    getImage(selectedDocType, 'back');
-                                  } else if (firstDocType == "") {
-                                    getImage(selectedDocType, 'back');
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                "Please select same doc")));
-                                  }
-                                },
-                                child: uploadTile('back', selectedDocType),
-                              ),
+                              selectedDocType!.backSide == true
+                                  ? InkWell(
+                                      onTap: () {
+                                        if (firstDocType != "" &&
+                                            firstDocType ==
+                                                selectedDocType?.doctype) {
+                                          getImage(selectedDocType, 'back');
+                                        } else if (firstDocType == "") {
+                                          getImage(selectedDocType, 'back');
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      "Please select same doc")));
+                                        }
+                                      },
+                                      child:
+                                          uploadTile('back', selectedDocType),
+                                    )
+                                  : SizedBox(),
                             ],
                           ),
                         SizedBox(
@@ -1196,15 +1250,16 @@ class DocOptions {
   bool? isTile;
   String? frontId;
   String? backId;
+  bool? backSide;
 
-  DocOptions({
-    this.code,
-    this.doctype,
-    this.icon,
-    this.isUploaded,
-    this.mediaId,
-    this.isTile,
-    this.backId,
-    this.frontId,
-  });
+  DocOptions(
+      {this.code,
+      this.doctype,
+      this.icon,
+      this.isUploaded,
+      this.mediaId,
+      this.isTile,
+      this.backId,
+      this.frontId,
+      this.backSide});
 }

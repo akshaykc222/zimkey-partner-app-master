@@ -21,7 +21,7 @@ class PartnerCalendarItemNew extends Equatable {
   factory PartnerCalendarItemNew.fromJson(Map<String, dynamic> json) {
     return PartnerCalendarItemNew(
       id: json['id'],
-      serviceDate: DateTime.parse(json['serviceDate']),
+      serviceDate: DateTime.parse(json['serviceDate']).toLocal(),
       partnerCalendarStatus: json['partnerCalendarStatus'],
       booking: Booking.fromJson(json['booking']),
       bookingServiceItem:
@@ -168,8 +168,8 @@ class BookingServiceItem {
         bookingServiceItemStatus: json['bookingServiceItemStatus'],
         endDateTime: json['actualEndDateTime'] == null
             ? null
-            : DateTime.parse(json['actualEndDateTime']),
-        startDateTime: DateTime.parse(json['startDateTime']),
+            : DateTime.parse(json['actualEndDateTime']).toLocal(),
+        startDateTime: DateTime.parse(json['startDateTime']).toLocal(),
         changedPrice: json['chargedPrice'] == null
             ? null
             : ChangedPrice.fromJson(json['chargedPrice']));

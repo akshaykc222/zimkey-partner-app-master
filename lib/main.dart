@@ -31,13 +31,19 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    print(e);
+  }
+
   await initHiveForFlutter();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   NotificationService().init();
   await GetStorage.init();
   //-----Lock Potrait oreintation - android
-  WidgetsFlutterBinding.ensureInitialized();
+  // WidgetsFlutterBinding.ensureInitialized();
   await SentryFlutter.init(
     (options) {
       options.dsn =

@@ -24,6 +24,7 @@ showCustomDialog(
   showDialog(
     barrierColor: Colors.black.withOpacity(0.5),
     context: context,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
         contentTextStyle: TextStyle(

@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:instant/instant.dart' as ins;
 import 'package:instant/instant.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
@@ -30,12 +29,14 @@ class JobCalendarDetail extends StatefulWidget {
   final String? bookingArea;
   final Function(int index)? updateTab;
   final Function? refetchJobs;
+  final bool? isFromNotification;
 
   const JobCalendarDetail({
     Key? key,
     required this.id,
     this.bookingArea,
     this.updateTab,
+    this.isFromNotification,
     this.refetchJobs,
   }) : super(key: key);
 
@@ -158,1366 +159,1422 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return Query(
-        options: QueryOptions(
-            document: gql(getPartnerCalendar),
-            fetchPolicy: FetchPolicy.noCache,
-            variables: {"id": widget.id}),
-        builder: (
-          QueryResult result, {
-          VoidCallback? refetch,
-          FetchMore? fetchMore,
-        }) {
-          if (result.isLoading) {
-            return Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
+    return PopScope(
+      canPop: widget.isFromNotification == true ? false : true,
+      onPopInvoked: (val) {
+        if (widget.isFromNotification == true) {
+          Navigator.pushReplacement(
+            context,
+            PageTransition(
+              type: PageTransitionType.bottomToTop,
+              child: Dashboard(
+                index: 1,
               ),
-            );
-          }
-          if (result.hasException ||
-              result.data?['getPartnerCalendarItem'] == null) {
-            print(result.exception.toString());
-            return SizedBox();
-          }
-          // print(
-          //     "resultItem ${result.data!['getPartnerCalendarItem']['bookingServiceItem']['bookingService']}");
-
-          // print(refId);
-          ServiceBillingOption billingOption = ServiceBillingOption.fromJson(
-              result.data!['getPartnerCalendarItem']['bookingServiceItem']
-                  ['bookingService']['serviceBillingOption']);
-          i = PartnerCalendarItem.fromJson(
-              result.data!['getPartnerCalendarItem']);
-          PartnerCalendarItem item = PartnerCalendarItem.fromJson(
-              result.data!['getPartnerCalendarItem']);
-          // print(object)
-          if (item.bookingServiceItem?.bookingServiceItemType?.index == 1) {
-            refId = result.data?['getPartnerCalendarItem']['bookingServiceItem']
-                ['refBookingServiceItem']['activePartnerCalenderId'];
-          }
-
-          return result.isLoading
-              ? Center(
+              duration: Duration(milliseconds: 300),
+            ),
+          );
+        } else {
+          // Navigator.pop(context);
+        }
+      },
+      child: Query(
+          options: QueryOptions(
+              document: gql(getPartnerCalendar),
+              fetchPolicy: FetchPolicy.noCache,
+              variables: {"id": widget.id}),
+          builder: (
+            QueryResult result, {
+            VoidCallback? refetch,
+            FetchMore? fetchMore,
+          }) {
+            if (result.isLoading) {
+              return Scaffold(
+                body: Center(
                   child: CircularProgressIndicator(),
-                )
-              : Stack(
-                  children: [
-                    Scaffold(
-                      backgroundColor: zimkeyWhite,
-                      appBar: AppBar(
-                        automaticallyImplyLeading: true,
-                        backgroundColor: zimkeyOrange,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            bottom: Radius.circular(25),
-                          ),
-                        ),
-                        leading: IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_ios_rounded,
-                            color: zimkeyWhite,
-                            size: 18,
-                          ),
-                          onPressed: () {
-                            Get.back();
-                          },
-                        ),
-                        title: Text(
-                          'Job Details',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: zimkeyWhite,
-                          ),
-                        ),
-                        // bottom: PreferredSize(
-                        //   preferredSize: Size.fromHeight(35.0),
-                        //   child: Container(
-                        //     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        //     width: double.infinity,
-                        //     child: Text(
-                        //       'Booking Detail',
-                        //       style: TextStyle(
-                        //         fontSize: 18,
-                        //         fontWeight: FontWeight.bold,
-                        //         color: zimkeyWhite,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                      ),
-                      body: Container(
-                        color: zimkeyWhite,
-                        // height: MediaQuery.of(context).size.height,
-                        // child: SingleChildScrollView(
-                        child: ListView(
-                          physics: BouncingScrollPhysics(),
-                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          // crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            (item.bookingServiceItem!
-                                            .bookingServiceItemStatus ==
-                                        BookingServiceItemStatusTypeEnum
-                                            .PARTNER_APPROVAL_PENDING &&
-                                    item.bookingServiceItem
-                                            ?.pendingRescheduleByCustomer !=
-                                        null)
-                                ? Container(
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: zimkeyLightGrey,
-                                      borderRadius: BorderRadius.circular(7),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Reschedule Request",
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text(
-                                          item.bookingServiceItem
-                                                      ?.pendingRescheduleByCustomer !=
-                                                  null
-                                              ? "Partner want to reschedule this work to \n${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.day.toString().padLeft(2, '0')}-${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.month.toString().padLeft(2, '0')}-${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.year} | ${filterTimeSlot(GetServiceBookingSlot(start: item.bookingServiceItem!.pendingRescheduleByCustomer!.startDateTime, end: item.bookingServiceItem!.pendingRescheduleByCustomer!.endDateTime, available: true))}"
-                                              : "",
-                                          overflow: TextOverflow.visible,
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: InkWell(
-                                                onTap: () => jobOfferDialog(
-                                                    "Decline",
-                                                    "Are you sure you want to decline",
-                                                    context, () async {
-                                                  print("tapping");
-                                                  QueryResult apprveJobResult =
-                                                      await approvePendingJob(
-                                                          item.bookingServiceItemId,
-                                                          false);
-                                                  print(apprveJobResult);
-                                                  if (apprveJobResult != null &&
-                                                      apprveJobResult.data !=
-                                                          null &&
-                                                      apprveJobResult.data![
-                                                              'approveJob'] !=
-                                                          null) {
-                                                    showCustomDialog(
-                                                      'Yay!',
-                                                      'You\'ve successfully approved this job.',
-                                                      context,
-                                                      Dashboard(
-                                                        index: 2,
-                                                      ),
-                                                    );
-                                                  } else if (apprveJobResult
-                                                      .hasException) {
-                                                    if (apprveJobResult
-                                                                .exception!
-                                                                .graphqlErrors !=
-                                                            null &&
-                                                        apprveJobResult
-                                                            .exception!
-                                                            .graphqlErrors
-                                                            .isNotEmpty)
-                                                      showCustomDialog(
-                                                          'Ooops!',
-                                                          '${apprveJobResult.exception!.graphqlErrors[0].message}',
-                                                          context,
-                                                          null);
-                                                    else
-                                                      showCustomDialog(
-                                                          'Ooops!',
-                                                          'Looks like something went wrong. Try again later.',
-                                                          context,
-                                                          null);
-                                                    print(
-                                                        'Approve JOB excpetion >> ${apprveJobResult.exception}');
-                                                  }
-                                                }),
-                                                child: Container(
-                                                  margin: const EdgeInsets
-                                                      .symmetric(horizontal: 5),
-                                                  decoration: BoxDecoration(
-                                                    color: zimkeyWhite,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: zimkeyDarkGrey
-                                                            .withOpacity(0.1),
-                                                        blurRadius:
-                                                            5.0, // soften the shadow
-                                                        spreadRadius:
-                                                            1.0, //extend the shadow
-                                                        offset: const Offset(
-                                                          2.0,
-                                                          // Move to right 10  horizontally
-                                                          3.0, // Move to bottom 10 Vertically
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  alignment: Alignment.center,
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 13),
-                                                  child: const Text(
-                                                    'Decline',
-                                                    style: TextStyle(
-                                                      color: zimkeyRed,
-                                                      // color: AppColors.zimkeyWhite,
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: InkWell(
-                                                onTap: () => jobOfferDialog(
-                                                    "Accept",
-                                                    "Are you sure you want to accept",
-                                                    context, () async {
-                                                  print("tapping");
-                                                  QueryResult apprveJobResult =
-                                                      await approvePendingJob(
-                                                          item.bookingServiceItemId,
-                                                          true);
-                                                  print(apprveJobResult);
-                                                  if (apprveJobResult != null &&
-                                                      apprveJobResult.data !=
-                                                          null &&
-                                                      apprveJobResult.data![
-                                                              'approveJob'] !=
-                                                          null) {
-                                                    showCustomDialog(
-                                                      'Yay!',
-                                                      'You\'ve successfully approved this job.',
-                                                      context,
-                                                      Dashboard(
-                                                        index: 2,
-                                                      ),
-                                                    );
-                                                  } else if (apprveJobResult
-                                                      .hasException) {
-                                                    if (apprveJobResult
-                                                                .exception!
-                                                                .graphqlErrors !=
-                                                            null &&
-                                                        apprveJobResult
-                                                            .exception!
-                                                            .graphqlErrors
-                                                            .isNotEmpty)
-                                                      showCustomDialog(
-                                                          'Ooops!',
-                                                          '${apprveJobResult.exception!.graphqlErrors[0].message}',
-                                                          context,
-                                                          null);
-                                                    else
-                                                      showCustomDialog(
-                                                          'Ooops!',
-                                                          'Looks like something went wrong. Try again later.',
-                                                          context,
-                                                          null);
-                                                    print(
-                                                        'Approve JOB excpetion >> ${apprveJobResult.exception}');
-                                                  }
-                                                }),
-                                                child: Container(
-                                                  margin: const EdgeInsets
-                                                      .symmetric(horizontal: 5),
-                                                  decoration: BoxDecoration(
-                                                    color: zimkeyWhite,
-                                                    // color: AppColors.buttonColor,
-                                                    // border: Border.all(
-                                                    //   color: zimkeyOrange.withOpacity(0.7),
-                                                    // ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: zimkeyDarkGrey
-                                                            .withOpacity(0.1),
-                                                        blurRadius:
-                                                            5.0, // soften the shadow
-                                                        spreadRadius:
-                                                            1.0, //extend the shadow
-                                                        offset: const Offset(
-                                                          2.0,
-                                                          // Move to right 10  horizontally
-                                                          3.0, // Move to bottom 10 Vertically
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  alignment: Alignment.center,
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 13),
-                                                  child: const Text(
-                                                    'Accept',
-                                                    style: TextStyle(
-                                                      color: zimkeyGreen,
-                                                      // color: AppColors.zimkeyWhite,
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                : SizedBox(),
-                            Hero(
-                              tag: 'tag${item.id}',
-                              child: Material(
-                                child: Container(
-                                  margin: EdgeInsets.only(top: 20, bottom: 5),
-                                  child: detailBookingWidget(item),
-                                ),
-                              ),
+                ),
+              );
+            }
+            if (result.hasException ||
+                result.data?['getPartnerCalendarItem'] == null) {
+              print(result.exception.toString());
+              return SizedBox();
+            }
+            // print(
+            //     "resultItem ${result.data!['getPartnerCalendarItem']['bookingServiceItem']['bookingService']}");
+
+            // print(refId);
+            ServiceBillingOption billingOption = ServiceBillingOption.fromJson(
+                result.data!['getPartnerCalendarItem']['bookingServiceItem']
+                    ['bookingService']['serviceBillingOption']);
+            i = PartnerCalendarItem.fromJson(
+                result.data!['getPartnerCalendarItem']);
+            PartnerCalendarItem item = PartnerCalendarItem.fromJson(
+                result.data!['getPartnerCalendarItem']);
+            // print(object)
+            if (item.bookingServiceItem?.bookingServiceItemType?.index == 1) {
+              refId = result.data?['getPartnerCalendarItem']
+                      ['bookingServiceItem']['refBookingServiceItem']
+                  ['activePartnerCalenderId'];
+            }
+
+            return result.isLoading
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Stack(
+                    children: [
+                      Scaffold(
+                        backgroundColor: zimkeyWhite,
+                        appBar: AppBar(
+                          automaticallyImplyLeading: true,
+                          backgroundColor: zimkeyOrange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              bottom: Radius.circular(25),
                             ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Container(
+                          ),
+                          leading: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios_rounded,
                               color: zimkeyWhite,
-                              child: Column(
-                                children: [
-                                  item
-                                                  .bookingServiceItem
-                                                  ?.bookingServiceItemType
-                                                  ?.index ==
-                                              1 &&
-                                          item.partnerCalendarStatus ==
-                                              PartnerCalendarStatusTypeEnum
-                                                  .REWORK_PENDING
-                                      ? Container(
-                                          margin: EdgeInsets.only(bottom: 15),
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 15),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              Get.back();
+                            },
+                          ),
+                          title: Text(
+                            'Job Details',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: zimkeyWhite,
+                            ),
+                          ),
+                          // bottom: PreferredSize(
+                          //   preferredSize: Size.fromHeight(35.0),
+                          //   child: Container(
+                          //     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          //     width: double.infinity,
+                          //     child: Text(
+                          //       'Booking Detail',
+                          //       style: TextStyle(
+                          //         fontSize: 18,
+                          //         fontWeight: FontWeight.bold,
+                          //         color: zimkeyWhite,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                        ),
+                        body: Container(
+                          color: zimkeyWhite,
+                          // height: MediaQuery.of(context).size.height,
+                          // child: SingleChildScrollView(
+                          child: ListView(
+                            physics: BouncingScrollPhysics(),
+                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              (item.bookingServiceItem!
+                                              .bookingServiceItemStatus ==
+                                          BookingServiceItemStatusTypeEnum
+                                              .PARTNER_APPROVAL_PENDING &&
+                                      item.bookingServiceItem
+                                              ?.pendingRescheduleByCustomer !=
+                                          null)
+                                  ? Container(
+                                      width: double.infinity,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: zimkeyLightGrey,
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Reschedule Request",
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text(
+                                            item.bookingServiceItem
+                                                        ?.pendingRescheduleByCustomer !=
+                                                    null
+                                                ? "Partner want to reschedule this work to \n${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.day.toString().padLeft(2, '0')}-${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.month.toString().padLeft(2, '0')}-${item.bookingServiceItem?.pendingRescheduleByCustomer!.startDateTime.year} | ${filterTimeSlot(GetServiceBookingSlot(start: item.bookingServiceItem!.pendingRescheduleByCustomer!.startDateTime, end: item.bookingServiceItem!.pendingRescheduleByCustomer!.endDateTime, available: true))}"
+                                                : "",
+                                            overflow: TextOverflow.visible,
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Row(
                                             children: [
-                                              //accept job
                                               Expanded(
                                                 child: InkWell(
-                                                  onTap: () async {
-                                                    reworkJobDialog(
-                                                        'Accept Job',
-                                                        'Are you sure you want to accept this job.',
+                                                  onTap: () => jobOfferDialog(
+                                                      "Decline",
+                                                      "Are you sure you want to decline",
+                                                      context, () async {
+                                                    print("tapping");
+                                                    QueryResult
+                                                        apprveJobResult =
+                                                        await approvePendingJob(
+                                                            item.bookingServiceItemId,
+                                                            false);
+                                                    print(apprveJobResult);
+                                                    if (apprveJobResult.data !=
+                                                            null &&
+                                                        apprveJobResult.data![
+                                                                'approveJob'] !=
+                                                            null) {
+                                                      showCustomDialog(
+                                                        'Yay!',
+                                                        'You\'ve successfully declined this job.',
                                                         context,
-                                                        null,
-                                                        item,
-                                                        true);
-                                                  },
+                                                        Dashboard(
+                                                          index: 2,
+                                                        ),
+                                                      );
+                                                    } else if (apprveJobResult
+                                                        .hasException) {
+                                                      if (apprveJobResult
+                                                                  .exception!
+                                                                  .graphqlErrors !=
+                                                              null &&
+                                                          apprveJobResult
+                                                              .exception!
+                                                              .graphqlErrors
+                                                              .isNotEmpty)
+                                                        showCustomDialog(
+                                                            'Ooops!',
+                                                            '${apprveJobResult.exception!.graphqlErrors[0].message}',
+                                                            context,
+                                                            null);
+                                                      else
+                                                        showCustomDialog(
+                                                            'Ooops!',
+                                                            'Looks like something went wrong. Try again later.',
+                                                            context,
+                                                            null);
+                                                      print(
+                                                          'Approve JOB excpetion >> ${apprveJobResult.exception}');
+                                                    }
+                                                  }),
                                                   child: Container(
-                                                    alignment: Alignment.center,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: 15,
-                                                            horizontal: 20),
+                                                    margin: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 5),
                                                     decoration: BoxDecoration(
-                                                      color: zimkeyOrange,
+                                                      color: zimkeyWhite,
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              30),
+                                                              10),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: zimkeyLightGrey
+                                                          color: zimkeyDarkGrey
                                                               .withOpacity(0.1),
                                                           blurRadius:
                                                               5.0, // soften the shadow
                                                           spreadRadius:
-                                                              2.0, //extend the shadow
-                                                          offset: Offset(
-                                                            1.0,
+                                                              1.0, //extend the shadow
+                                                          offset: const Offset(
+                                                            2.0,
                                                             // Move to right 10  horizontally
-                                                            1.0, // Move to bottom 10 Vertically
+                                                            3.0, // Move to bottom 10 Vertically
                                                           ),
                                                         )
                                                       ],
                                                     ),
-                                                    child: Text(
-                                                      'Accept',
+                                                    alignment: Alignment.center,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 13),
+                                                    child: const Text(
+                                                      'Decline',
                                                       style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: zimkeyWhite,
-                                                        fontFamily: 'Inter',
-                                                        // fontWeight: FontWeight.bold,
+                                                        color: zimkeyRed,
+                                                        // color: AppColors.zimkeyWhite,
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(
-                                                width: 10,
-                                              ),
-                                              //start job
-                                              // Expanded(
-                                              //   child: InkWell(
-                                              //     onTap: () async {
-                                              //       reworkJobDialog(
-                                              //           'Reject Job',
-                                              //           'Are you sure you want to Reject this job.',
-                                              //           context,
-                                              //           null,
-                                              //           widget.jobitem,
-                                              //           false);
-                                              //     },
-                                              //     child: Container(
-                                              //       alignment: Alignment.center,
-                                              //       padding: EdgeInsets.symmetric(
-                                              //           vertical: 15, horizontal: 20),
-                                              //       decoration: BoxDecoration(
-                                              //         color: zimkeyOrange,
-                                              //         borderRadius:
-                                              //             BorderRadius.circular(30),
-                                              //         boxShadow: [
-                                              //           BoxShadow(
-                                              //             color: zimkeyLightGrey
-                                              //                 .withOpacity(0.1),
-                                              //             blurRadius:
-                                              //                 5.0, // soften the shadow
-                                              //             spreadRadius:
-                                              //                 2.0, //extend the shadow
-                                              //             offset: Offset(
-                                              //               1.0, // Move to right 10  horizontally
-                                              //               1.0, // Move to bottom 10 Vertically
-                                              //             ),
-                                              //           )
-                                              //         ],
-                                              //       ),
-                                              //       child: Text(
-                                              //         'Reject',
-                                              //         style: TextStyle(
-                                              //           fontSize: 16,
-                                              //           color: zimkeyWhite,
-                                              //           fontFamily: 'Inter',
-                                              //           // fontWeight: FontWeight.bold,
-                                              //         ),
-                                              //       ),
-                                              //     ),
-                                              //   ),
-                                              // )
-                                            ],
-                                          ),
-                                        )
-                                      : item.bookingServiceItem?.canStartJob ==
-                                                  true ||
-                                              item.bookingServiceItem
-                                                          ?.canUncommit ==
-                                                      true &&
-                                                  (item.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_PARTNER) &&
-                                                  (item.partnerCalendarStatus !=
-                                                      PartnerCalendarStatusTypeEnum
-                                                          .CANCELED_CUSTOMER)
-                                          ? Container(
-                                              margin:
-                                                  EdgeInsets.only(bottom: 15),
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 15),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  //unassign job
-                                                  item.bookingServiceItem
-                                                                  ?.canUncommit ==
-                                                              true &&
-                                                          (item.partnerCalendarStatus !=
-                                                              PartnerCalendarStatusTypeEnum
-                                                                  .CANCELED_PARTNER) &&
-                                                          (item.partnerCalendarStatus !=
-                                                              PartnerCalendarStatusTypeEnum
-                                                                  .CANCELED_CUSTOMER)
-                                                      ? Expanded(
-                                                          child: InkWell(
-                                                            onTap: () async {
-                                                              if (item.serviceDate!
-                                                                      .difference(
-                                                                          DateTime
-                                                                              .now())
-                                                                      .inHours <=
-                                                                  3)
-                                                                unassignConfirmDialog(
-                                                                    'Oops!',
-                                                                    'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
-                                                                    context,
-                                                                    false,
-                                                                    item,
-                                                                    "Unassign");
-                                                              else
-                                                                await uncommitJobMutation(item
-                                                                    .bookingServiceItem!
-                                                                    .id);
-                                                              widget
-                                                                  .refetchJobs!();
-                                                            },
-                                                            child: Container(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                      vertical:
-                                                                          15,
-                                                                      horizontal:
-                                                                          20),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color:
-                                                                    zimkeyOrange,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: zimkeyLightGrey
-                                                                        .withOpacity(
-                                                                            0.1),
-                                                                    blurRadius:
-                                                                        5.0, // soften the shadow
-                                                                    spreadRadius:
-                                                                        2.0, //extend the shadow
-                                                                    offset:
-                                                                        Offset(
-                                                                      1.0,
-                                                                      // Move to right 10  horizontally
-                                                                      1.0, // Move to bottom 10 Vertically
-                                                                    ),
-                                                                  )
-                                                                ],
-                                                              ),
-                                                              child: Text(
-                                                                'Unassign Job ',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 16,
-                                                                  color:
-                                                                      zimkeyWhite,
-                                                                  fontFamily:
-                                                                      'Inter',
-                                                                  // fontWeight: FontWeight.bold,
-                                                                ),
-                                                              ),
-                                                            ),
+                                              Expanded(
+                                                child: InkWell(
+                                                  onTap: () => jobOfferDialog(
+                                                      "Accept",
+                                                      "Are you sure you want to accept",
+                                                      context, () async {
+                                                    print("tapping");
+                                                    QueryResult
+                                                        apprveJobResult =
+                                                        await approvePendingJob(
+                                                            item.bookingServiceItemId,
+                                                            true);
+                                                    print(apprveJobResult);
+                                                    if (apprveJobResult !=
+                                                            null &&
+                                                        apprveJobResult.data !=
+                                                            null &&
+                                                        apprveJobResult.data![
+                                                                'approveJob'] !=
+                                                            null) {
+                                                      showCustomDialog(
+                                                        'Yay!',
+                                                        'You\'ve successfully approved this job.',
+                                                        context,
+                                                        Dashboard(
+                                                          index: 2,
+                                                        ),
+                                                      );
+                                                    } else if (apprveJobResult
+                                                        .hasException) {
+                                                      if (apprveJobResult
+                                                                  .exception!
+                                                                  .graphqlErrors !=
+                                                              null &&
+                                                          apprveJobResult
+                                                              .exception!
+                                                              .graphqlErrors
+                                                              .isNotEmpty)
+                                                        showCustomDialog(
+                                                            'Ooops!',
+                                                            '${apprveJobResult.exception!.graphqlErrors[0].message}',
+                                                            context,
+                                                            null);
+                                                      else
+                                                        showCustomDialog(
+                                                            'Ooops!',
+                                                            'Looks like something went wrong. Try again later.',
+                                                            context,
+                                                            null);
+                                                      print(
+                                                          'Approve JOB excpetion >> ${apprveJobResult.exception}');
+                                                    }
+                                                  }),
+                                                  child: Container(
+                                                    margin: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 5),
+                                                    decoration: BoxDecoration(
+                                                      color: zimkeyWhite,
+                                                      // color: AppColors.buttonColor,
+                                                      // border: Border.all(
+                                                      //   color: zimkeyOrange.withOpacity(0.7),
+                                                      // ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: zimkeyDarkGrey
+                                                              .withOpacity(0.1),
+                                                          blurRadius:
+                                                              5.0, // soften the shadow
+                                                          spreadRadius:
+                                                              1.0, //extend the shadow
+                                                          offset: const Offset(
+                                                            2.0,
+                                                            // Move to right 10  horizontally
+                                                            3.0, // Move to bottom 10 Vertically
                                                           ),
                                                         )
-                                                      : SizedBox(),
-                                                  SizedBox(
-                                                    width: 10,
+                                                      ],
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 13),
+                                                    child: const Text(
+                                                      'Accept',
+                                                      style: TextStyle(
+                                                        color: zimkeyGreen,
+                                                        // color: AppColors.zimkeyWhite,
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
                                                   ),
-                                                  //start job
-                                                  item.bookingServiceItem
-                                                                  ?.canStartJob ==
-                                                              true &&
-                                                          (item.partnerCalendarStatus !=
-                                                              PartnerCalendarStatusTypeEnum
-                                                                  .CANCELED_PARTNER) &&
-                                                          (item.partnerCalendarStatus !=
-                                                              PartnerCalendarStatusTypeEnum
-                                                                  .CANCELED_CUSTOMER)
-                                                      ? Expanded(
-                                                          child: InkWell(
-                                                            onTap: () async {
-                                                              _workCode.clear();
-                                                              startJobDialog(
-                                                                'Verification',
-                                                                'Enter job work code for verification.',
-                                                                context,
-                                                                null,
-                                                                item,
-                                                              );
-                                                            },
-                                                            child: Container(
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                      vertical:
-                                                                          15,
-                                                                      horizontal:
-                                                                          20),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color:
-                                                                    zimkeyOrange,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: zimkeyLightGrey
-                                                                        .withOpacity(
-                                                                            0.1),
-                                                                    blurRadius:
-                                                                        5.0, // soften the shadow
-                                                                    spreadRadius:
-                                                                        2.0, //extend the shadow
-                                                                    offset:
-                                                                        Offset(
-                                                                      1.0,
-                                                                      // Move to right 10  horizontally
-                                                                      1.0, // Move to bottom 10 Vertically
-                                                                    ),
-                                                                  )
-                                                                ],
-                                                              ),
-                                                              child: Text(
-                                                                'Start Job',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 16,
+                                                ),
+                                              )
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    )
+                                  : SizedBox(),
+                              Hero(
+                                tag: 'tag${item.id}',
+                                child: Material(
+                                  child: Container(
+                                    margin: EdgeInsets.only(top: 20, bottom: 5),
+                                    child: detailBookingWidget(item),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Container(
+                                color: zimkeyWhite,
+                                child: Column(
+                                  children: [
+                                    item
+                                                    .bookingServiceItem
+                                                    ?.bookingServiceItemType
+                                                    ?.index ==
+                                                1 &&
+                                            item
+                                                    .partnerCalendarStatus ==
+                                                PartnerCalendarStatusTypeEnum
+                                                    .REWORK_PENDING
+                                        ? Container(
+                                            margin: EdgeInsets.only(bottom: 15),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 15),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                //accept job
+                                                Expanded(
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      reworkJobDialog(
+                                                          'Accept Job',
+                                                          'Are you sure you want to accept this job.',
+                                                          context,
+                                                          null,
+                                                          item,
+                                                          true);
+                                                    },
+                                                    child: Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 15,
+                                                              horizontal: 20),
+                                                      decoration: BoxDecoration(
+                                                        color: zimkeyOrange,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(30),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color:
+                                                                zimkeyLightGrey
+                                                                    .withOpacity(
+                                                                        0.1),
+                                                            blurRadius:
+                                                                5.0, // soften the shadow
+                                                            spreadRadius:
+                                                                2.0, //extend the shadow
+                                                            offset: Offset(
+                                                              1.0,
+                                                              // Move to right 10  horizontally
+                                                              1.0, // Move to bottom 10 Vertically
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      child: Text(
+                                                        'Accept',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color: zimkeyWhite,
+                                                          fontFamily: 'Inter',
+                                                          // fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 10,
+                                                ),
+                                                //start job
+                                                // Expanded(
+                                                //   child: InkWell(
+                                                //     onTap: () async {
+                                                //       reworkJobDialog(
+                                                //           'Reject Job',
+                                                //           'Are you sure you want to Reject this job.',
+                                                //           context,
+                                                //           null,
+                                                //           widget.jobitem,
+                                                //           false);
+                                                //     },
+                                                //     child: Container(
+                                                //       alignment: Alignment.center,
+                                                //       padding: EdgeInsets.symmetric(
+                                                //           vertical: 15, horizontal: 20),
+                                                //       decoration: BoxDecoration(
+                                                //         color: zimkeyOrange,
+                                                //         borderRadius:
+                                                //             BorderRadius.circular(30),
+                                                //         boxShadow: [
+                                                //           BoxShadow(
+                                                //             color: zimkeyLightGrey
+                                                //                 .withOpacity(0.1),
+                                                //             blurRadius:
+                                                //                 5.0, // soften the shadow
+                                                //             spreadRadius:
+                                                //                 2.0, //extend the shadow
+                                                //             offset: Offset(
+                                                //               1.0, // Move to right 10  horizontally
+                                                //               1.0, // Move to bottom 10 Vertically
+                                                //             ),
+                                                //           )
+                                                //         ],
+                                                //       ),
+                                                //       child: Text(
+                                                //         'Reject',
+                                                //         style: TextStyle(
+                                                //           fontSize: 16,
+                                                //           color: zimkeyWhite,
+                                                //           fontFamily: 'Inter',
+                                                //           // fontWeight: FontWeight.bold,
+                                                //         ),
+                                                //       ),
+                                                //     ),
+                                                //   ),
+                                                // )
+                                              ],
+                                            ),
+                                          )
+                                        : item.bookingServiceItem
+                                                        ?.canStartJob ==
+                                                    true ||
+                                                item.bookingServiceItem
+                                                            ?.canUncommit ==
+                                                        true &&
+                                                    (item.partnerCalendarStatus !=
+                                                        PartnerCalendarStatusTypeEnum
+                                                            .CANCELED_PARTNER) &&
+                                                    (item.partnerCalendarStatus !=
+                                                        PartnerCalendarStatusTypeEnum
+                                                            .CANCELED_CUSTOMER)
+                                            ? Container(
+                                                margin:
+                                                    EdgeInsets.only(bottom: 15),
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 15),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    //unassign job
+                                                    item.bookingServiceItem
+                                                                    ?.canUncommit ==
+                                                                true &&
+                                                            (item.partnerCalendarStatus !=
+                                                                PartnerCalendarStatusTypeEnum
+                                                                    .CANCELED_PARTNER) &&
+                                                            (item.partnerCalendarStatus !=
+                                                                PartnerCalendarStatusTypeEnum
+                                                                    .CANCELED_CUSTOMER)
+                                                        ? Expanded(
+                                                            child: InkWell(
+                                                              onTap: () async {
+                                                                if (item.serviceDate!
+                                                                        .difference(
+                                                                            DateTime.now())
+                                                                        .inHours <=
+                                                                    3)
+                                                                  unassignConfirmDialog(
+                                                                      'Oops!',
+                                                                      'Looks like your job is scheduled to start in 3 hours. Could you provide your reason for uncommiting the job?',
+                                                                      context,
+                                                                      false,
+                                                                      item,
+                                                                      "Unassign");
+                                                                else
+                                                                  await uncommitJobMutation(item
+                                                                      .bookingServiceItem!
+                                                                      .id);
+                                                                widget
+                                                                    .refetchJobs!();
+                                                              },
+                                                              child: Container(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        vertical:
+                                                                            15,
+                                                                        horizontal:
+                                                                            20),
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   color:
-                                                                      zimkeyWhite,
-                                                                  fontFamily:
-                                                                      'Inter',
-                                                                  // fontWeight: FontWeight.bold,
+                                                                      zimkeyOrange,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              30),
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: zimkeyLightGrey
+                                                                          .withOpacity(
+                                                                              0.1),
+                                                                      blurRadius:
+                                                                          5.0,
+                                                                      // soften the shadow
+                                                                      spreadRadius:
+                                                                          2.0,
+                                                                      //extend the shadow
+                                                                      offset:
+                                                                          Offset(
+                                                                        1.0,
+                                                                        // Move to right 10  horizontally
+                                                                        1.0, // Move to bottom 10 Vertically
+                                                                      ),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                                child: Text(
+                                                                  'Unassign Job ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color:
+                                                                        zimkeyWhite,
+                                                                    fontFamily:
+                                                                        'Inter',
+                                                                    // fontWeight: FontWeight.bold,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                        )
-                                                      : SizedBox(),
+                                                          )
+                                                        : SizedBox(),
+                                                    SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    //start job
+                                                    item.bookingServiceItem
+                                                                    ?.canStartJob ==
+                                                                true &&
+                                                            (item.partnerCalendarStatus !=
+                                                                PartnerCalendarStatusTypeEnum
+                                                                    .CANCELED_PARTNER) &&
+                                                            (item.partnerCalendarStatus !=
+                                                                PartnerCalendarStatusTypeEnum
+                                                                    .CANCELED_CUSTOMER)
+                                                        ? Expanded(
+                                                            child: InkWell(
+                                                              onTap: () async {
+                                                                _workCode
+                                                                    .clear();
+                                                                startJobDialog(
+                                                                  'Verification',
+                                                                  'Enter job work code for verification.',
+                                                                  context,
+                                                                  null,
+                                                                  item,
+                                                                );
+                                                              },
+                                                              child: Container(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .center,
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        vertical:
+                                                                            15,
+                                                                        horizontal:
+                                                                            20),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color:
+                                                                      zimkeyOrange,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              30),
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: zimkeyLightGrey
+                                                                          .withOpacity(
+                                                                              0.1),
+                                                                      blurRadius:
+                                                                          5.0,
+                                                                      // soften the shadow
+                                                                      spreadRadius:
+                                                                          2.0,
+                                                                      //extend the shadow
+                                                                      offset:
+                                                                          Offset(
+                                                                        1.0,
+                                                                        // Move to right 10  horizontally
+                                                                        1.0, // Move to bottom 10 Vertically
+                                                                      ),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                                child: Text(
+                                                                  'Start Job',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color:
+                                                                        zimkeyWhite,
+                                                                    fontFamily:
+                                                                        'Inter',
+                                                                    // fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        : SizedBox(),
+                                                  ],
+                                                ),
+                                              )
+                                            : SizedBox(),
+                                    if (jobStatus!.toLowerCase().contains(
+                                            'partner approval pending') &&
+                                        !(item
+                                                    .bookingServiceItem
+                                                    ?.bookingServiceItemType
+                                                    ?.index ==
+                                                1 &&
+                                            item.partnerCalendarStatus ==
+                                                PartnerCalendarStatusTypeEnum
+                                                    .REWORK_PENDING))
+                                      Container(
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            // Expanded(
+                                            //   child: InkWell(
+                                            //     onTap: () async {
+                                            //       await uncommitJobMutation(
+                                            //           widget.jobitem.bookingServiceItem.id);
+                                            //       await widget.refetchJobs;
+                                            //     },
+                                            //     child: Container(
+                                            //       alignment: Alignment.center,
+                                            //       // width: MediaQuery.of(context).size.width,
+                                            //       padding: EdgeInsets.symmetric(
+                                            //           vertical: 10, horizontal: 20),
+                                            //       decoration: BoxDecoration(
+                                            //         color: zimkeyBodyOrange,
+                                            //         borderRadius: BorderRadius.circular(10),
+                                            //         boxShadow: [
+                                            //           BoxShadow(
+                                            //             color:
+                                            //                 zimkeyLightGrey.withOpacity(0.05),
+                                            //             blurRadius: 3.0, // soften the shadow
+                                            //             spreadRadius: 3.0, //extend the shadow
+                                            //             offset: Offset(
+                                            //               1.0, // Move to right 10  horizontally
+                                            //               3.0, // Move to bottom 10 Vertically
+                                            //             ),
+                                            //           )
+                                            //         ],
+                                            //       ),
+                                            //       child: Text(
+                                            //         'Reject',
+                                            //         style: TextStyle(
+                                            //           fontSize: 16,
+                                            //           color: zimkeyOrange,
+                                            //           fontFamily: 'Inter',
+                                            //           // fontWeight: FontWeight.bold,
+                                            //         ),
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // ),
+                                            // SizedBox(
+                                            //   width: 20,
+                                            // ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (item.bookingServiceItem != null &&
+                                        item.bookingServiceItem!
+                                                .canReschedule !=
+                                            null &&
+                                        item.bookingServiceItem!
+                                            .canReschedule! &&
+                                        !(item
+                                                    .bookingServiceItem
+                                                    ?.bookingServiceItemType
+                                                    ?.index ==
+                                                1 &&
+                                            item.partnerCalendarStatus ==
+                                                PartnerCalendarStatusTypeEnum
+                                                    .REWORK_PENDING) &&
+                                        (item.partnerCalendarStatus !=
+                                            PartnerCalendarStatusTypeEnum
+                                                .CANCELED_CUSTOMER) &&
+                                        (item.partnerCalendarStatus !=
+                                            PartnerCalendarStatusTypeEnum
+                                                .CANCELED_PARTNER))
+                                      Column(
+                                        children: [
+                                          //reschedule job-----------
+                                          InkWell(
+                                            onTap: () async {
+                                              Navigator.push(
+                                                context,
+                                                PageTransition(
+                                                  type: PageTransitionType
+                                                      .rightToLeft,
+                                                  child: RescheduleJobpage(
+                                                    bookingItemId: item
+                                                        .bookingServiceItem!.id,
+                                                    jobitem: item,
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 300),
+                                                ),
+                                              );
+                                            },
+                                            child: Container(
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: 20, vertical: 5),
+                                              alignment: Alignment.center,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 15, horizontal: 20),
+                                              decoration: BoxDecoration(
+                                                color: zimkeyWhite,
+                                                borderRadius:
+                                                    BorderRadius.circular(30),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: zimkeyLightGrey
+                                                        .withOpacity(0.1),
+                                                    blurRadius:
+                                                        5.0, // soften the shadow
+                                                    spreadRadius:
+                                                        2.0, //extend the shadow
+                                                    offset: Offset(
+                                                      1.0,
+                                                      // Move to right 10  horizontally
+                                                      1.0, // Move to bottom 10 Vertically
+                                                    ),
+                                                  )
                                                 ],
                                               ),
-                                            )
-                                          : SizedBox(),
-                                  if (jobStatus!.toLowerCase().contains(
-                                          'partner approval pending') &&
-                                      !(item
-                                                  .bookingServiceItem
-                                                  ?.bookingServiceItemType
-                                                  ?.index ==
-                                              1 &&
-                                          item.partnerCalendarStatus ==
-                                              PartnerCalendarStatusTypeEnum
-                                                  .REWORK_PENDING))
-                                    Container(
-                                      margin: EdgeInsets.symmetric(
-                                          vertical: 15, horizontal: 20),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Expanded(
-                                          //   child: InkWell(
-                                          //     onTap: () async {
-                                          //       await uncommitJobMutation(
-                                          //           widget.jobitem.bookingServiceItem.id);
-                                          //       await widget.refetchJobs;
+                                              child: Text(
+                                                'Reschedule Job',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: zimkeyDarkGrey,
+                                                  fontFamily: 'Inter',
+                                                  // fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          //add sope of work
+                                          // if (widget.jobitem!.bookingServiceItem!
+                                          //             .bookingService !=
+                                          //         null &&
+                                          //     widget.jobitem!.bookingServiceItem!
+                                          //             .bookingService!.service !=
+                                          //         null &&
+                                          //     widget.jobitem!.bookingServiceItem!
+                                          //             .bookingService!.service!.addons !=
+                                          //         null &&
+                                          //     widget
+                                          //         .jobitem!
+                                          //         .bookingServiceItem!
+                                          //         .bookingService!
+                                          //         .service!
+                                          //         .addons!
+                                          //         .isNotEmpty)
+                                          //   InkWell(
+                                          //     onTap: () {
+                                          //       Navigator.push(
+                                          //         context,
+                                          //         PageTransition(
+                                          //           type: PageTransitionType.rightToLeft,
+                                          //           child: AddScope(
+                                          //             bookingServiceItemId: widget
+                                          //                 .jobitem!.bookingServiceItem!.id,
+                                          //             jobItem: widget.jobitem,
+                                          //           ),
+                                          //           duration: Duration(milliseconds: 300),
+                                          //         ),
+                                          //       );
                                           //     },
+                                          //     // child: Expanded(
                                           //     child: Container(
+                                          //       width: MediaQuery.of(context).size.width,
+                                          //       margin: EdgeInsets.only(
+                                          //           bottom: 15, left: 15, right: 15),
                                           //       alignment: Alignment.center,
-                                          //       // width: MediaQuery.of(context).size.width,
+                                          //       // width: (MediaQuery.of(context).size.width) - 200,
                                           //       padding: EdgeInsets.symmetric(
-                                          //           vertical: 10, horizontal: 20),
+                                          //           vertical: 15, horizontal: 20),
                                           //       decoration: BoxDecoration(
-                                          //         color: zimkeyBodyOrange,
-                                          //         borderRadius: BorderRadius.circular(10),
+                                          //         color: zimkeyWhite,
+                                          //         borderRadius: BorderRadius.circular(30),
                                           //         boxShadow: [
                                           //           BoxShadow(
-                                          //             color:
-                                          //                 zimkeyLightGrey.withOpacity(0.05),
-                                          //             blurRadius: 3.0, // soften the shadow
-                                          //             spreadRadius: 3.0, //extend the shadow
+                                          //             color: zimkeyLightGrey.withOpacity(0.1),
+                                          //             blurRadius: 5.0, // soften the shadow
+                                          //             spreadRadius: 2.0, //extend the shadow
                                           //             offset: Offset(
                                           //               1.0, // Move to right 10  horizontally
-                                          //               3.0, // Move to bottom 10 Vertically
+                                          //               1.0, // Move to bottom 10 Vertically
                                           //             ),
                                           //           )
                                           //         ],
                                           //       ),
                                           //       child: Text(
-                                          //         'Reject',
+                                          //         'Add Scope of Work',
                                           //         style: TextStyle(
                                           //           fontSize: 16,
-                                          //           color: zimkeyOrange,
+                                          //           color: zimkeyDarkGrey,
                                           //           fontFamily: 'Inter',
                                           //           // fontWeight: FontWeight.bold,
                                           //         ),
                                           //       ),
                                           //     ),
+                                          //     // ),
                                           //   ),
-                                          // ),
-                                          // SizedBox(
-                                          //   width: 20,
-                                          // ),
+                                          //Uncommit job ------
                                         ],
                                       ),
-                                    ),
-                                  if (item.bookingServiceItem != null &&
-                                      item.bookingServiceItem!.canReschedule !=
-                                          null &&
-                                      item.bookingServiceItem!.canReschedule! &&
-                                      !(item
-                                                  .bookingServiceItem
-                                                  ?.bookingServiceItemType
-                                                  ?.index ==
-                                              1 &&
-                                          item.partnerCalendarStatus ==
-                                              PartnerCalendarStatusTypeEnum
-                                                  .REWORK_PENDING) &&
-                                      (item.partnerCalendarStatus !=
-                                          PartnerCalendarStatusTypeEnum
-                                              .CANCELED_CUSTOMER) &&
-                                      (item.partnerCalendarStatus !=
-                                          PartnerCalendarStatusTypeEnum
-                                              .CANCELED_PARTNER))
-                                    Column(
-                                      children: [
-                                        //reschedule job-----------
-                                        InkWell(
-                                          onTap: () async {
-                                            Navigator.push(
+
+                                    //finish job
+                                    if (taskStage == 2)
+                                      InkWell(
+                                        onTap: () async {
+                                          // FocusNode.
+                                          print("test");
+                                          FocusScope.of(context).unfocus();
+                                          finishJobDialog(
+                                              'Finish Job',
+                                              'Add your finishing comments.',
                                               context,
-                                              PageTransition(
-                                                type: PageTransitionType
-                                                    .rightToLeft,
-                                                child: RescheduleJobpage(
-                                                  bookingItemId: item
-                                                      .bookingServiceItem!.id,
-                                                  jobitem: item,
+                                              null,
+                                              item);
+                                        },
+                                        child: Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          margin: EdgeInsets.only(
+                                              bottom: 15, left: 20, right: 20),
+                                          alignment: Alignment.center,
+                                          // width: (MediaQuery.of(context).size.width) - 240,
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 20),
+                                          decoration: BoxDecoration(
+                                            color: zimkeyOrange,
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: zimkeyLightGrey
+                                                    .withOpacity(0.1),
+                                                blurRadius:
+                                                    5.0, // soften the shadow
+                                                spreadRadius:
+                                                    2.0, //extend the shadow
+                                                offset: Offset(
+                                                  1.0,
+                                                  // Move to right 10  horizontally
+                                                  1.0, // Move to bottom 10 Vertically
                                                 ),
-                                                duration:
-                                                    Duration(milliseconds: 300),
-                                              ),
-                                            );
-                                          },
-                                          child: Container(
-                                            margin: EdgeInsets.symmetric(
-                                                horizontal: 20, vertical: 5),
-                                            alignment: Alignment.center,
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 15, horizontal: 20),
-                                            decoration: BoxDecoration(
+                                              )
+                                            ],
+                                          ),
+                                          child: Text(
+                                            'Finish Job',
+                                            style: TextStyle(
+                                              fontSize: 16,
                                               color: zimkeyWhite,
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: zimkeyLightGrey
-                                                      .withOpacity(0.1),
-                                                  blurRadius:
-                                                      5.0, // soften the shadow
-                                                  spreadRadius:
-                                                      2.0, //extend the shadow
-                                                  offset: Offset(
-                                                    1.0,
-                                                    // Move to right 10  horizontally
-                                                    1.0, // Move to bottom 10 Vertically
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                            child: Text(
-                                              'Reschedule Job',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: zimkeyDarkGrey,
-                                                fontFamily: 'Inter',
-                                                // fontWeight: FontWeight.bold,
-                                              ),
+                                              fontFamily: 'Inter',
+                                              // fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                        SizedBox(
-                                          height: 10,
+                                      ),
+                                    //Add Additional work------------------
+                                    if (item.bookingServiceItem!
+                                                .bookingService !=
+                                            null &&
+                                        item.bookingServiceItem!.bookingService!
+                                                .service !=
+                                            null &&
+                                        jobStatus != 'CLOSED' &&
+                                        !(item
+                                                    .bookingServiceItem
+                                                    ?.bookingServiceItemType
+                                                    ?.index ==
+                                                1 &&
+                                            item.partnerCalendarStatus ==
+                                                PartnerCalendarStatusTypeEnum
+                                                    .REWORK_PENDING) &&
+                                        (item.partnerCalendarStatus !=
+                                            PartnerCalendarStatusTypeEnum
+                                                .CANCELED_PARTNER) &&
+                                        (item.partnerCalendarStatus !=
+                                            PartnerCalendarStatusTypeEnum
+                                                .CANCELED_CUSTOMER) &&
+                                        item
+                                                .bookingServiceItem
+                                                ?.bookingServiceItemType
+                                                ?.index !=
+                                            1 &&
+                                        item
+                                                .bookingServiceItem
+                                                ?.bookingServiceItemType
+                                                ?.index !=
+                                            2)
+                                      InkWell(
+                                        onTap: () async {
+                                          billingOption;
+                                          Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType
+                                                  .rightToLeft,
+                                              child: AddAdditionalwork(
+                                                serviceBillingOption:
+                                                    billingOption,
+                                                bookingItemId:
+                                                    item.bookingServiceItem!.id,
+                                                jobtem: item,
+                                              ),
+                                              duration:
+                                                  Duration(milliseconds: 300),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          margin: EdgeInsets.only(
+                                              bottom: 30, left: 20, right: 20),
+                                          alignment: Alignment.center,
+                                          // width: (MediaQuery.of(context).size.width) - 240,
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 15, horizontal: 20),
+                                          decoration: BoxDecoration(
+                                            color: zimkeyOrange,
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: zimkeyLightGrey
+                                                    .withOpacity(0.1),
+                                                blurRadius:
+                                                    5.0, // soften the shadow
+                                                spreadRadius:
+                                                    2.0, //extend the shadow
+                                                offset: Offset(
+                                                  1.0,
+                                                  // Move to right 10  horizontally
+                                                  1.0, // Move to bottom 10 Vertically
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          child: Text(
+                                            'Add Additional Work',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: zimkeyWhite,
+                                              fontFamily: 'Inter',
+                                              // fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                        //add sope of work
-                                        // if (widget.jobitem!.bookingServiceItem!
-                                        //             .bookingService !=
-                                        //         null &&
-                                        //     widget.jobitem!.bookingServiceItem!
-                                        //             .bookingService!.service !=
-                                        //         null &&
-                                        //     widget.jobitem!.bookingServiceItem!
-                                        //             .bookingService!.service!.addons !=
-                                        //         null &&
-                                        //     widget
-                                        //         .jobitem!
-                                        //         .bookingServiceItem!
-                                        //         .bookingService!
-                                        //         .service!
-                                        //         .addons!
-                                        //         .isNotEmpty)
-                                        //   InkWell(
-                                        //     onTap: () {
-                                        //       Navigator.push(
-                                        //         context,
-                                        //         PageTransition(
-                                        //           type: PageTransitionType.rightToLeft,
-                                        //           child: AddScope(
-                                        //             bookingServiceItemId: widget
-                                        //                 .jobitem!.bookingServiceItem!.id,
-                                        //             jobItem: widget.jobitem,
-                                        //           ),
-                                        //           duration: Duration(milliseconds: 300),
-                                        //         ),
-                                        //       );
-                                        //     },
-                                        //     // child: Expanded(
-                                        //     child: Container(
-                                        //       width: MediaQuery.of(context).size.width,
-                                        //       margin: EdgeInsets.only(
-                                        //           bottom: 15, left: 15, right: 15),
-                                        //       alignment: Alignment.center,
-                                        //       // width: (MediaQuery.of(context).size.width) - 200,
-                                        //       padding: EdgeInsets.symmetric(
-                                        //           vertical: 15, horizontal: 20),
-                                        //       decoration: BoxDecoration(
-                                        //         color: zimkeyWhite,
-                                        //         borderRadius: BorderRadius.circular(30),
-                                        //         boxShadow: [
-                                        //           BoxShadow(
-                                        //             color: zimkeyLightGrey.withOpacity(0.1),
-                                        //             blurRadius: 5.0, // soften the shadow
-                                        //             spreadRadius: 2.0, //extend the shadow
-                                        //             offset: Offset(
-                                        //               1.0, // Move to right 10  horizontally
-                                        //               1.0, // Move to bottom 10 Vertically
-                                        //             ),
-                                        //           )
-                                        //         ],
-                                        //       ),
-                                        //       child: Text(
-                                        //         'Add Scope of Work',
-                                        //         style: TextStyle(
-                                        //           fontSize: 16,
-                                        //           color: zimkeyDarkGrey,
-                                        //           fontFamily: 'Inter',
-                                        //           // fontWeight: FontWeight.bold,
-                                        //         ),
-                                        //       ),
-                                        //     ),
-                                        //     // ),
-                                        //   ),
-                                        //Uncommit job ------
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              item.bookingServiceItem?.additionalWork.isEmpty ==
+                                      true
+                                  ? const SizedBox()
+                                  : const Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              left: 20.0, top: 8),
+                                          child: Text(
+                                            'Additional Works',
+                                            style: TextStyle(
+                                              color: zimkeyDarkGrey,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox()
                                       ],
                                     ),
-
-                                  //finish job
-                                  if (taskStage == 2)
-                                    InkWell(
-                                      onTap: () async {
-                                        // FocusNode.
-                                        print("test");
-                                        FocusScope.of(context).unfocus();
-                                        finishJobDialog(
-                                            'Finish Job',
-                                            'Add your finishing comments.',
-                                            context,
-                                            null,
-                                            item);
-                                      },
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.only(
-                                            bottom: 15, left: 20, right: 20),
-                                        alignment: Alignment.center,
-                                        // width: (MediaQuery.of(context).size.width) - 240,
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 15, horizontal: 20),
-                                        decoration: BoxDecoration(
-                                          color: zimkeyOrange,
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: zimkeyLightGrey
-                                                  .withOpacity(0.1),
-                                              blurRadius:
-                                                  5.0, // soften the shadow
-                                              spreadRadius:
-                                                  2.0, //extend the shadow
-                                              offset: Offset(
-                                                1.0, // Move to right 10  horizontally
-                                                1.0, // Move to bottom 10 Vertically
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        child: Text(
-                                          'Finish Job',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: zimkeyWhite,
-                                            fontFamily: 'Inter',
-                                            // fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  //Add Additional work------------------
-                                  if (item.bookingServiceItem!.bookingService != null &&
-                                      item.bookingServiceItem!.bookingService!
-                                              .service !=
-                                          null &&
-                                      jobStatus != 'CLOSED' &&
-                                      !(item
-                                                  .bookingServiceItem
-                                                  ?.bookingServiceItemType
-                                                  ?.index ==
-                                              1 &&
-                                          item.partnerCalendarStatus ==
-                                              PartnerCalendarStatusTypeEnum
-                                                  .REWORK_PENDING) &&
-                                      (item.partnerCalendarStatus !=
-                                          PartnerCalendarStatusTypeEnum
-                                              .CANCELED_PARTNER) &&
-                                      (item.partnerCalendarStatus !=
-                                          PartnerCalendarStatusTypeEnum
-                                              .CANCELED_CUSTOMER) &&
-                                      item.bookingServiceItem
-                                              ?.bookingServiceItemType?.index !=
-                                          1 &&
-                                      item.bookingServiceItem
-                                              ?.bookingServiceItemType?.index !=
-                                          2)
-                                    InkWell(
-                                      onTap: () async {
-                                        billingOption;
-                                        Navigator.push(
-                                          context,
-                                          PageTransition(
-                                            type:
-                                                PageTransitionType.rightToLeft,
-                                            child: AddAdditionalwork(
-                                              serviceBillingOption:
-                                                  billingOption,
-                                              bookingItemId:
-                                                  item.bookingServiceItem!.id,
-                                              jobtem: item,
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 300),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.only(
-                                            bottom: 30, left: 20, right: 20),
-                                        alignment: Alignment.center,
-                                        // width: (MediaQuery.of(context).size.width) - 240,
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: 15, horizontal: 20),
-                                        decoration: BoxDecoration(
-                                          color: zimkeyOrange,
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: zimkeyLightGrey
-                                                  .withOpacity(0.1),
-                                              blurRadius:
-                                                  5.0, // soften the shadow
-                                              spreadRadius:
-                                                  2.0, //extend the shadow
-                                              offset: Offset(
-                                                1.0, // Move to right 10  horizontally
-                                                1.0, // Move to bottom 10 Vertically
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        child: Text(
-                                          'Add Additional Work',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: zimkeyWhite,
-                                            fontFamily: 'Inter',
-                                            // fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                              const SizedBox(
+                                height: 10,
                               ),
-                            ),
-                            item.bookingServiceItem?.additionalWork.isEmpty ==
-                                    true
-                                ? const SizedBox()
-                                : const Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.only(left: 20.0, top: 8),
-                                        child: Text(
-                                          'Additional Works',
-                                          style: TextStyle(
-                                            color: zimkeyDarkGrey,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox()
-                                    ],
-                                  ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            item.bookingServiceItem?.additionalWork.isEmpty ==
-                                    true
-                                ? const SizedBox()
-                                : Column(
-                                    children: [
-                                      ListView.builder(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemCount: item.bookingServiceItem
-                                              ?.additionalWork.length,
-                                          shrinkWrap: true,
-                                          itemBuilder: (context, index) =>
-                                              Container(
-                                                margin:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 5,
-                                                        vertical: 10),
-                                                decoration: BoxDecoration(
-                                                  color: zimkeyLightGrey,
-                                                  borderRadius:
-                                                      BorderRadius.circular(7),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 15,
-                                                        vertical: 10),
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        HelperWidgets.buildText(
-                                                            text: "Status",
-                                                            fontSize: 13),
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 5,
-                                                                  vertical: 5),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: zimkeyGreen
-                                                                .withOpacity(
-                                                                    0.3),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        7),
+                              item.bookingServiceItem?.additionalWork.isEmpty ==
+                                      true
+                                  ? const SizedBox()
+                                  : Column(
+                                      children: [
+                                        ListView.builder(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemCount: item.bookingServiceItem
+                                                ?.additionalWork.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) =>
+                                                Container(
+                                                  margin: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: zimkeyLightGrey,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7),
+                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 15,
+                                                      vertical: 10),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          HelperWidgets
+                                                              .buildText(
+                                                                  text:
+                                                                      "Status",
+                                                                  fontSize: 13),
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        5,
+                                                                    vertical:
+                                                                        5),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: zimkeyGreen
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          7),
+                                                            ),
+                                                            child: HelperWidgets
+                                                                .buildText(
+                                                              text: item
+                                                                      .bookingServiceItem
+                                                                      ?.additionalWork[
+                                                                          index]
+                                                                      .bookingAdditionalWorkStatus ??
+                                                                  "",
+                                                              color:
+                                                                  zimkeyDarkGrey,
+                                                              fontSize: 13,
+                                                            ),
                                                           ),
-                                                          child: HelperWidgets
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      item
+                                                                  .bookingServiceItem
+                                                                  ?.additionalWork[
+                                                                      index]
+                                                                  .bookingAddons
+                                                                  .isNotEmpty ==
+                                                              true
+                                                          ? Align(
+                                                              alignment: Alignment
+                                                                  .centerLeft,
+                                                              child: HelperWidgets.buildText(
+                                                                  text:
+                                                                      "Booking Addons",
+                                                                  color:
+                                                                      zimkeyDarkGrey,
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            )
+                                                          : SizedBox(),
+                                                      ListView.builder(
+                                                          shrinkWrap: true,
+                                                          physics:
+                                                              const NeverScrollableScrollPhysics(),
+                                                          itemCount: item
+                                                              .bookingServiceItem
+                                                              ?.additionalWork[
+                                                                  index]
+                                                              .bookingAddons
+                                                              .length,
+                                                          itemBuilder:
+                                                              (context, i) =>
+                                                                  ListTile(
+                                                                    title: Text(item
+                                                                            .bookingServiceItem
+                                                                            ?.additionalWork[index]
+                                                                            .bookingAddons[i]
+                                                                            .name ??
+                                                                        ""),
+                                                                    subtitle: Text(
+                                                                        "${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].units}  ${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].unit}"),
+                                                                    trailing: Text(
+                                                                        "₹${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].amount.grandTotal}"),
+                                                                  )),
+                                                      item
+                                                                  .bookingServiceItem
+                                                                  ?.additionalWork[
+                                                                      index]
+                                                                  .bookingAddons
+                                                                  .isEmpty ==
+                                                              true
+                                                          ? const SizedBox()
+                                                          : const SizedBox(
+                                                              height: 5,
+                                                            ),
+                                                      item
+                                                                  .bookingServiceItem
+                                                                  ?.additionalWork[
+                                                                      index]
+                                                                  .modificationReason ==
+                                                              null
+                                                          ? const SizedBox()
+                                                          : Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                HelperWidgets
+                                                                    .buildText(
+                                                                        text:
+                                                                            "Modification Reason",
+                                                                        fontSize:
+                                                                            13),
+                                                                HelperWidgets
+                                                                    .buildText(
+                                                                  text: item
+                                                                          .bookingServiceItem
+                                                                          ?.additionalWork[
+                                                                              index]
+                                                                          .modificationReason ??
+                                                                      "",
+                                                                  color:
+                                                                      zimkeyDarkGrey,
+                                                                  fontSize: 13,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                      SizedBox(
+                                                        height: item
+                                                                    .bookingServiceItem
+                                                                    ?.additionalWork[
+                                                                        index]
+                                                                    .modificationReason ==
+                                                                null
+                                                            ? 0
+                                                            : 5,
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          HelperWidgets.buildText(
+                                                              text:
+                                                                  "Additional Work Hr(s)",
+                                                              fontSize: 13),
+                                                          HelperWidgets
                                                               .buildText(
                                                             text: item
                                                                     .bookingServiceItem
                                                                     ?.additionalWork[
                                                                         index]
-                                                                    .bookingAdditionalWorkStatus ??
+                                                                    .additionalHoursUnits
+                                                                    .toString() ??
                                                                 "",
                                                             color:
                                                                 zimkeyDarkGrey,
                                                             fontSize: 13,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    item
-                                                                .bookingServiceItem
-                                                                ?.additionalWork[
-                                                                    index]
-                                                                .bookingAddons
-                                                                .isNotEmpty ==
-                                                            true
-                                                        ? Align(
-                                                            alignment: Alignment
-                                                                .centerLeft,
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          HelperWidgets.buildText(
+                                                              text:
+                                                                  "Additional Hr Total",
+                                                              fontSize: 13),
+                                                          HelperWidgets
+                                                              .buildText(
+                                                            text:
+                                                                "₹${item.bookingServiceItem?.additionalWork[index].additionalHoursAmount?.grandTotal?.toStringAsFixed(2) ?? 0}",
+                                                            color:
+                                                                zimkeyDarkGrey,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          HelperWidgets.buildText(
+                                                              text:
+                                                                  "Grand Total",
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        5,
+                                                                    vertical:
+                                                                        5),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: zimkeyOrange
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          7),
+                                                            ),
                                                             child: HelperWidgets.buildText(
                                                                 text:
-                                                                    "Booking Addons",
+                                                                    "₹${item.bookingServiceItem?.additionalWork[index].totalAdditionalWork?.grandTotal}" ??
+                                                                        "",
                                                                 color:
                                                                     zimkeyDarkGrey,
                                                                 fontSize: 15,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold),
-                                                          )
-                                                        : SizedBox(),
-                                                    ListView.builder(
-                                                        shrinkWrap: true,
-                                                        physics:
-                                                            const NeverScrollableScrollPhysics(),
-                                                        itemCount: item
-                                                            .bookingServiceItem
-                                                            ?.additionalWork[
-                                                                index]
-                                                            .bookingAddons
-                                                            .length,
-                                                        itemBuilder:
-                                                            (context, i) =>
-                                                                ListTile(
-                                                                  title: Text(item
-                                                                          .bookingServiceItem
-                                                                          ?.additionalWork[
-                                                                              index]
-                                                                          .bookingAddons[
-                                                                              i]
-                                                                          .name ??
-                                                                      ""),
-                                                                  subtitle: Text(
-                                                                      "${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].units}  ${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].unit}"),
-                                                                  trailing: Text(
-                                                                      "₹${item.bookingServiceItem?.additionalWork[index].bookingAddons[i].amount.grandTotal}"),
-                                                                )),
-                                                    item
-                                                                .bookingServiceItem
-                                                                ?.additionalWork[
-                                                                    index]
-                                                                .bookingAddons
-                                                                .isEmpty ==
-                                                            true
-                                                        ? const SizedBox()
-                                                        : const SizedBox(
-                                                            height: 5,
                                                           ),
-                                                    item
-                                                                .bookingServiceItem
-                                                                ?.additionalWork[
-                                                                    index]
-                                                                .modificationReason ==
-                                                            null
-                                                        ? const SizedBox()
-                                                        : Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              HelperWidgets
-                                                                  .buildText(
-                                                                      text:
-                                                                          "Modification Reason",
-                                                                      fontSize:
-                                                                          13),
-                                                              HelperWidgets
-                                                                  .buildText(
-                                                                text: item
-                                                                        .bookingServiceItem
-                                                                        ?.additionalWork[
-                                                                            index]
-                                                                        .modificationReason ??
-                                                                    "",
-                                                                color:
-                                                                    zimkeyDarkGrey,
-                                                                fontSize: 13,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                    SizedBox(
-                                                      height: item
-                                                                  .bookingServiceItem
-                                                                  ?.additionalWork[
-                                                                      index]
-                                                                  .modificationReason ==
-                                                              null
-                                                          ? 0
-                                                          : 5,
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        HelperWidgets.buildText(
-                                                            text:
-                                                                "Additional Work Hr(s)",
-                                                            fontSize: 13),
-                                                        HelperWidgets.buildText(
-                                                          text: item
-                                                                  .bookingServiceItem
-                                                                  ?.additionalWork[
-                                                                      index]
-                                                                  .additionalHoursUnits
-                                                                  .toString() ??
-                                                              "",
-                                                          color: zimkeyDarkGrey,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        HelperWidgets.buildText(
-                                                            text:
-                                                                "Additional Hr Total",
-                                                            fontSize: 13),
-                                                        HelperWidgets.buildText(
-                                                          text:
-                                                              "₹${item.bookingServiceItem?.additionalWork[index].additionalHoursAmount?.grandTotal?.toStringAsFixed(2) ?? 0}",
-                                                          color: zimkeyDarkGrey,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        HelperWidgets.buildText(
-                                                            text: "Grand Total",
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 5,
-                                                                  vertical: 5),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: zimkeyOrange
-                                                                .withOpacity(
-                                                                    0.3),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        7),
-                                                          ),
-                                                          child: HelperWidgets.buildText(
-                                                              text:
-                                                                  "₹${item.bookingServiceItem?.additionalWork[index].totalAdditionalWork?.grandTotal}" ??
-                                                                      "",
-                                                              color:
-                                                                  zimkeyDarkGrey,
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                              )),
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
+                                                )),
+                                      ],
+                                    ),
+                              SizedBox(
+                                height: 200,
+                              ),
+                            ],
+                          ),
+                          // ),
+                        ),
+                      ),
+                      if (taskStage >= 1 && taskStage <= 2)
+                        Positioned(
+                          bottom: 20,
+                          right: 20,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                confirmCallDialog(
+                                    'Call Request',
+                                    'A request will be sent to your Zimkey customer. You will receive a call from them soon.',
+                                    context,
+                                    true,
+                                    i,
+                                    'Request Call');
+                              },
+                              child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  decoration: BoxDecoration(
+                                    color: zimkeyBodyOrange,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: zimkeyDarkGrey.withOpacity(0.1),
+                                        blurRadius: 5.0, // soften the shadow
+                                        spreadRadius: 1.0, //extend the shadow
+                                        offset: Offset(
+                                          3.0, // Move to right 10  horizontally
+                                          3.0, // Move to bottom 10 Vertically
+                                        ),
+                                      )
                                     ],
                                   ),
-                            SizedBox(
-                              height: 200,
+                                  child: Icon(
+                                    Icons.call,
+                                    color: zimkeyOrange,
+                                  )),
                             ),
-                          ],
-                        ),
-                        // ),
-                      ),
-                    ),
-                    if (taskStage >= 1 && taskStage <= 2)
-                      Positioned(
-                        bottom: 20,
-                        right: 20,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              confirmCallDialog(
-                                  'Call Request',
-                                  'A request will be sent to your Zimkey customer. You will receive a call from them soon.',
-                                  context,
-                                  true,
-                                  i,
-                                  'Request Call');
-                            },
-                            child: Container(
-                                height: 50,
-                                width: 50,
-                                decoration: BoxDecoration(
-                                  color: zimkeyBodyOrange,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: zimkeyDarkGrey.withOpacity(0.1),
-                                      blurRadius: 5.0, // soften the shadow
-                                      spreadRadius: 1.0, //extend the shadow
-                                      offset: Offset(
-                                        3.0, // Move to right 10  horizontally
-                                        3.0, // Move to bottom 10 Vertically
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.call,
-                                  color: zimkeyOrange,
-                                )),
                           ),
                         ),
-                      ),
-                    if (isLoading) Center(child: sharedLoadingIndicator()),
-                  ],
-                );
-        });
+                      if (isLoading) Center(child: sharedLoadingIndicator()),
+                    ],
+                  );
+          }),
+    );
   }
 
   unassignConfirmDialog(String title, String msg, BuildContext context,
@@ -2113,8 +2170,7 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
 
   Widget detailBookingWidget(PartnerCalendarItem jobitem) {
     print('bookingiten Id ... ${jobitem.bookingServiceItemId}');
-    DateTime servDateTime =
-        ins.dateTimeToZone(zone: "IST", datetime: jobitem.serviceDate!);
+    DateTime servDateTime = jobitem.serviceDate!;
     String endHr;
     String endMin;
     String hr = servDateTime.hour.toString();
@@ -2909,7 +2965,8 @@ class _JobCalendarDetailState extends State<JobCalendarDetail> {
               jobitem.booking!.pendingAmount != null &&
               jobitem.booking!.pendingAmount!.amount != null &&
               jobitem.booking!.pendingAmount!.amount! > 0 &&
-              jobitem.bookingServiceItem?.bookingServiceItemType?.index != 2)
+              jobitem.bookingServiceItem?.bookingServiceItemType?.index != 2 &&
+              jobitem.bookingServiceItem?.bookingServiceItemType?.index != 1)
             Container(
               margin: EdgeInsets.only(bottom: 15),
               padding: const EdgeInsets.symmetric(horizontal: 15),
