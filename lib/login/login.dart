@@ -56,6 +56,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   final FocusNode _otpNode = FocusNode();
   bool enableOtp = true;
   bool hasOtpExpired = false;
+
   @override
   void initState() {
     super.initState();
@@ -157,24 +158,34 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   bool hasError = false;
 
   verifyOtpService(String otp) async {
+    print("verifing");
     setState(() {
       isLoading = true;
     });
     final firebaseMessaging = FirebaseMessaging.instance;
     var token = await firebaseMessaging.getToken();
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    final androidInfo = await deviceInfo.androidInfo;
-    var d = androidInfo.model;
-    print('Running on ${androidInfo.model}'); // e.g. "Moto G (4)"
+
+    var d;
+    var da;
     try {
-      final iosInfo = await deviceInfo.iosInfo;
-      var da = iosInfo.utsname.machine;
-    } catch (e) {}
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        d = androidInfo.model;
+        print('Running on ${androidInfo.model}');
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        da = iosInfo.utsname.machine;
+      }
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+    }
     print({
       "phoneNumber": "+91${_mobile.text}",
       "otp": otp,
       "token": token,
-      "deviceId": Platform.isAndroid ? d : d,
+      "deviceId": Platform.isAndroid ? d : da,
       "device": Platform.isAndroid ? "ANDROID" : "IOS",
     });
     final MutationOptions _options = MutationOptions(
@@ -969,8 +980,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                     // });
                     hasOtpExpired = false;
                     loginWithPhone("+91${_mobile.text}");
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Otp sent...")));
-
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text("Otp sent...")));
                   },
                   setExpiry: (bool val) {
                     hasOtpExpired = val;
@@ -1001,6 +1012,7 @@ class CountDownTimer extends StatefulWidget {
   final Function? loaderDisplay;
   final bool? isNavigated;
   final Function? setExpiry;
+
   const CountDownTimer({
     Key? key,
     this.auth,
@@ -1010,6 +1022,7 @@ class CountDownTimer extends StatefulWidget {
     this.isNavigated,
     this.setExpiry,
   }) : super(key: key);
+
   @override
   _CountDownTimerState createState() => _CountDownTimerState();
 }
